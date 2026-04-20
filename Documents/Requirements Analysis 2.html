@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Requirements Analysis.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="保险理赔风控需求分析">保险理赔风控需求分析</h1>
+<h2 id="1-引言">1. 引言</h2>
+<h3 id="11-文档目的">1.1 文档目的</h3>
+<p>本文档旨在明确保险理赔风控系统的 用户需求、功能需求、业务流程及数据规范，为系统的设计、开发、测试及验收提供统一的需求依据，确保项目各参与方对系统需求达成共识。</p>
+<h3 id="12-项目背景">1.2 项目背景</h3>
+<p>随着保险业数字化发展，保险理赔欺诈问题愈发突出，传统人工审核 + 规则引擎的反欺诈手段存在效率低、识别能力弱等痛点。 本项目基于人工智能与大数据技术，构建保险理赔风控系统，实现欺诈行为的自动检测与风险预警。</p>
+<h3 id="13-系统范围">1.3 系统范围</h3>
+<p>本系统聚焦医疗保险理赔欺诈检测场景，核心覆盖数据管理、模型训练、欺诈检测、系统集成四大核心模块，配套基础的用户管理功能，不涉及保险公司核心业务系统的深度对接，仅通过文件上传、API 接口实现数据交互与预测服务。</p>
+<hr>
+<h2 id="2-用户需求">2. 用户需求</h2>
+<p>本系统的核心用户分为理赔审核员和模型开发者两类，不同用户的角色定位、使用场景及核心需求存在显著差异，具体需求如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">用户类型</th>
+<th style="text-align:left">角色定位</th>
+<th style="text-align:left">核心使用场景</th>
+<th style="text-align:left">功能需求</th>
+<th style="text-align:left">体验需求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>理赔审核员</strong></td>
+<td style="text-align:left">一线理赔案件处理人员，无人工智能基础知识</td>
+<td style="text-align:left">1. 单条理赔案件的风险查询<br>2. 批量理赔案件的风险筛查<br>3. 高风险案件的疑点查看与人工判定<br>4. 欺诈检测结果的记录与追溯</td>
+<td style="text-align:left">1. 支持快速录入 / 上传理赔案件信息<br>2. 直观展示案件欺诈风险等级、概率<br>3. 可查看影响风险判定的关键特征<br>4. 支持对案件标注人工判定结果（通过 / 拒绝 / 进一步调查）<br>5. 可查询历史案件的检测与处理记录</td>
+<td style="text-align:left">1. 界面操作简洁，无复杂专业操作<br>2. 单条查询响应速度快，批量查询有进度提示<br>3. 风险结果展示清晰，疑点突出标注<br>4. 支持常用操作的快捷入口</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>模型开发者</strong></td>
+<td style="text-align:left">系统与模型的维护人员，具备算法 / 开发知识</td>
+<td style="text-align:left">1. 模型的训练、调优与重训<br>2. 模型效果的监控与评估<br>3. 理赔数据的上传、预处理与特征工程<br>4. 系统检测指标的统计与报表生成<br>5. 基础的用户权限管理（可选）</td>
+<td style="text-align:left">1. 支持多算法选型与超参数调节<br>2. 可查看模型训练的评估指标（混淆矩阵、AUC 等）<br>3. 支持数据清洗、特征生成的自定义配置<br>4. 可生成欺诈检测日报 / 月报等统计报表<br>5. 支持模型的保存、加载与版本管理<br>6. 可配置用户角色与操作权限（可选）</td>
+<td style="text-align:left">1. 提供灵活的参数配置界面 / 脚本<br>2. 支持模型训练过程的日志查看<br>3. 评估指标与报表支持可视化展示<br>4. 代码 / 配置可追溯，支持版本回滚</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3-功能需求">3. 功能需求</h2>
+<p>本系统的功能需求按 数据管理模块、模型训练模块、欺诈检测模块、系统集成模块、用户管理模块 五大核心模块划分，每个模块包含具体功能点、功能描述、输入输出及约束条件，具体如下：</p>
+<h3 id="31-数据管理模块">3.1 数据管理模块</h3>
+<p>核心实现理赔数据的全生命周期处理，从数据导入到特征工程，为模型训练和欺诈检测提供高质量数据支撑。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">功能点</th>
+<th style="text-align:left">功能描述</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+<th style="text-align:left">约束条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>数据导入</strong></td>
+<td style="text-align:left">支持上传 CSV/Excel 格式的理赔数据，自动进行文件格式、字段完整性校验，校验不通过则返回错误提示</td>
+<td style="text-align:left">CSV/Excel 格式的理赔数据文件</td>
+<td style="text-align:left">1. 校验通过：数据导入成功提示，数据进入待处理队列<br>2. 校验失败：明确的错误信息（如字段缺失、格式错误、文件损坏）</td>
+<td style="text-align:left">1. 仅支持 CSV/Excel 格式，单文件大小不超过 100MB<br>2. 上传文件需包含系统预设的核心字段（如保单号、索赔金额、是否欺诈标签）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>数据预处理</strong></td>
+<td style="text-align:left">自动处理数据中的缺失值、异常值，支持标准化 / 归一化操作，预处理规则可配置（如缺失值填充方式、异常值过滤阈值）</td>
+<td style="text-align:left">待处理的原始理赔数据，可选的预处理配置参数</td>
+<td style="text-align:left">1. 预处理后的干净数据集<br>2. 数据预处理报告（含缺失值 / 异常值处理数量、处理方式）</td>
+<td style="text-align:left">1. 缺失率超过 30% 的字段，系统自动提示是否删除 / 填充<br>2. 异常值处理需符合业务逻辑（如索赔金额不允许为负）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>特征工程</strong></td>
+<td style="text-align:left">自动生成欺诈检测相关的常用特征（如索赔金额与保额比值、历史索赔次数、事故与投保时间间隔），同时提供手动特征选择 / 删除接口，支持特征重要性排序</td>
+<td style="text-align:left">预处理后的干净数据集，可选的特征配置</td>
+<td style="text-align:left">1. 完成特征构造的特征数据集<br>2. 特征工程报告（含生成的特征列表、特征重要性排序）</td>
+<td style="text-align:left">1. 生成的特征维度不少于 15 个<br>2. 支持特征的批量选择 / 删除，可保存特征配置方案</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-欺诈检测模块">3.2 欺诈检测模块</h3>
+<p>核心实现理赔案件的欺诈风险检测，支持单条 / 批量预测，提供可解释的预测结果，辅助人工决策。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">功能点</th>
+<th style="text-align:left">功能描述</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+<th style="text-align:left">约束条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>单条预测</strong></td>
+<td style="text-align:left">通过表单录入单条理赔案件信息，系统调用最优模型进行检测，返回欺诈概率与风险等级</td>
+<td style="text-align:left">单条理赔案件的各项信息（与数据字段一致）</td>
+<td style="text-align:left">1. 案件欺诈概率（0-1）<br>2. 风险等级（低 / 中 / 高，按概率阈值划分，阈值可配置）<br>3. 预测结果生成时间</td>
+<td style="text-align:left">单条预测响应时间不超过 3 秒</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>批量预测</strong></td>
+<td style="text-align:left">上传 CSV/Excel 格式的批量理赔案件文件，系统异步进行检测，支持查询检测进度，完成后返回带预测结果的表格</td>
+<td style="text-align:left">CSV/Excel 格式的批量案件文件</td>
+<td style="text-align:left">1. 检测任务 ID，实时进度提示<br>2. 带欺诈概率、风险等级的批量预测结果表格（可下载）</td>
+<td style="text-align:left">1. 批量文件单批记录数不超过 1 万条<br>2. 异步任务保留 7 天，支持结果多次下载</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>解释性输出</strong></td>
+<td style="text-align:left">可选输出影响预测结果的关键特征（基于 SHAP 值），按特征重要性排序，标注特征取值与影响方向</td>
+<td style="text-align:left">预测完成的案件信息</td>
+<td style="text-align:left">关键特征解释报告（含特征名称、特征取值、SHAP 值、影响方向）</td>
+<td style="text-align:left">仅对高 / 中风险案件提供完整的解释性输出</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-系统集成模块">3.3 系统集成模块</h3>
+<p>核心实现系统的对外服务与前端交互，提供标准化 API 接口和可视化 Web 界面，支持端到端的理赔风控流程。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">功能点</th>
+<th style="text-align:left">功能描述</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+<th style="text-align:left">约束条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>RESTful API 服务</strong></td>
+<td style="text-align:left">提供标准化的 API 接口，支持单条预测、批量预测、模型信息查询等功能，接收 JSON 格式请求，返回结构化 JSON 响应</td>
+<td style="text-align:left">1. POST /api/predict：单条案件 JSON 数据<br>2. POST /api/batch_predict：批量案件文件（含任务 ID）<br>3. GET /api/model/info：无（或模型 ID）</td>
+<td style="text-align:left">1. 单条预测：欺诈概率、风险等级 JSON 结果<br>2. 批量预测：任务 ID、处理进度 JSON 结果<br>3. 模型信息：模型版本、训练时间、AUC 等 JSON 信息</td>
+<td style="text-align:left">1. API 接口返回状态码符合 HTTP 规范<br>2. 批量预测接口需实现幂等性，避免重复处理</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Web 界面开发</strong></td>
+<td style="text-align:left">开发可视化前端 Web 页面，包含案件录入、单条 / 批量预测、结果展示、历史查询、模型监控等功能模块，适配电脑端访问</td>
+<td style="text-align:left">用户的界面操作（点击、录入、上传、查询）</td>
+<td style="text-align:left">1. 交互式操作界面，实时反馈操作结果<br>2. 可视化图表（风险分布、模型评估指标、统计报表）<br>3. 可下载的结果文件、报表文件</td>
+<td style="text-align:left">1. 界面兼容主流浏览器（Chrome/Firefox/Edge）<br>2. 提供操作指南弹窗 / 页面，适配非专业用户</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-用户管理模块可选">3.4 用户管理模块（可选）</h3>
+<p>实现基础的用户认证与权限控制，区分理赔审核员和风控管理员的操作权限，保障系统数据安全。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">功能点</th>
+<th style="text-align:left">功能描述</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+<th style="text-align:left">约束条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>用户登录 / 注册</strong></td>
+<td style="text-align:left">支持用户账号注册、密码登录，提供密码找回功能，登录时进行身份验证与角色识别</td>
+<td style="text-align:left">1. 注册：用户名、密码、手机号 / 邮箱、角色选择<br>2. 登录：用户名、密码<br>3. 找回密码：手机号 / 邮箱</td>
+<td style="text-align:left">1. 注册 / 登录 / 找回密码的结果提示<br>2. 登录成功后跳转到对应角色的首页</td>
+<td style="text-align:left">1. 用户名唯一，密码需满足复杂度要求（字母 + 数字）<br>2. 支持短信 / 邮箱验证码验证</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>权限控制</strong></td>
+<td style="text-align:left">为不同角色配置不同的系统操作权限，风控管理员拥有全权限，理赔审核员仅拥有欺诈检测、案件查询等基础权限</td>
+<td style="text-align:left">角色选择、权限配置操作</td>
+<td style="text-align:left">1. 权限配置成功提示<br>2. 用户操作时的权限校验结果（允许 / 拒绝）</td>
+<td style="text-align:left">1. 基于角色的访问控制（RBAC），不支持自定义角色<br>2. 权限配置仅风控管理员可操作</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-业务流程分析">4. 业务流程分析</h2>
+<h3 id="41-核心业务流程图">4.1 核心业务流程图</h3>
+<p>本系统的核心业务流程分为 模型训练流程 和 理赔欺诈检测流程 两大主线，模型训练流程为欺诈检测流程提供可用模型，欺诈检测流程是系统的核心业务落地流程，具体流程图如下：</p>
+<h4 id="411-模型训练业务流程图">4.1.1 模型训练业务流程图</h4>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+
+    %% 样式定义
+    classDef startEnd fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#fff,stroke:#333,stroke-width:1px;
+    classDef decision fill:#fffbe6,stroke:#d4b106,stroke-width:1px;
+    classDef storage fill:#e6f7ff,stroke:#1890ff,stroke-width:1px;
+
+    %% 流程节点
+    Start([开始: 获取历史理赔数据]) --> Import[数据导入: 上传CSV/Excel]
+    Import --> Validation{格式与字段校验}
+    
+    Validation -- 校验失败 --> Error[返回错误信息并终止]
+    Validation -- 校验通过 --> Preprocess[数据预处理: 处理缺失值/异常值]
+    
+    Preprocess --> FeatureEng[特征工程: 自动生成+手动选择特征]
+    FeatureEng --> Split[数据集划分: 训练集/测试集]
+    
+    Split --> AlgoSelect[算法选择: LR/RF/XGBoost/NN]
+    AlgoSelect --> Train[模型训练: 超参数配置与拟合]
+    
+    Train --> Evaluate[性能评估: 计算AUC/混淆矩阵/PR曲线]
+    
+    Evaluate --> Decision{评估指标是否达标?}
+    
+    Decision -- 否: 需优化 --> FeatureEng
+    Decision -- 是: 准予发布 --> Save[模型保存: 存储.pkl或.h5文件]
+    
+    Save --> Version[版本管理: 登记模型版本与训练时间]
+    Version --> Deploy[发布上线: 更新线上推理模型]
+    Deploy --> End([流程结束])
+
+    %% 存储关联
+    Validation -.-> DB[(原始数据库)]
+    Preprocess -.-> DB_Clean[(清洗后数据库)]
+    FeatureEng -.-> DB_Feat[(特征数据库)]
+    Save -.-> Model_Store[(模型库)]
+</div></code></pre>
+<h4 id="412-理赔欺诈检测业务流程图">4.1.2 理赔欺诈检测业务流程图</h4>
+<pre><code class="language-mermaid"><div class="mermaid">graph TD
+    %% 样式定义
+    classDef userAction fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef systemProcess fill:#fff,stroke:#333,stroke-width:1px;
+    classDef aiLogic fill:#f6ffed,stroke:#52c41a,stroke-width:2px;
+    classDef decision fill:#fffbe6,stroke:#d4b106,stroke-width:1px;
+    classDef dataStore fill:#f9f0ff,stroke:#722ed1,stroke-width:1px;
+
+    %% 流程节点
+    Start([开始: 待审核理赔案件]) --> InputType{选择录入方式}
+    
+    %% 输入阶段
+    InputType -- 单条录入 --> ManualInput[表单填写理赔信息]
+    InputType -- 批量上传 --> BulkUpload[上传 CSV/Excel 文件]
+    
+    ManualInput --> Validation[数据格式与完整性校验]
+    BulkUpload --> Validation
+    
+    Validation -- 校验不通过 --> ErrorPrompt[返回错误提示并修正]
+    ErrorPrompt --> InputType
+
+    %% 推理阶段
+    Validation -- 校验通过 --> FeatureSync[特征同步: 自动生成衍生特征]
+    FeatureSync --> ModelInference[AI 引擎: 调用模型计算欺诈概率]
+    
+    ModelInference --> RiskLeveling[风险分级: 划分 高/中/低 风险]
+    
+    %% 解释性输出
+    RiskLeveling --> RiskCheck{风险等级?}
+    
+    RiskCheck -- 低风险 --> ResultDisplay[展示预测结果: 欺诈概率与等级]
+    RiskCheck -- 中/高风险 --> ShapExplain[SHAP 解释性分析: 提取关键欺诈特征]
+    ShapExplain --> ResultDisplay
+
+    %% 人工决策阶段
+    ResultDisplay --> AdjusterReview[审核员查看案件详情与风险疑点]
+    AdjusterReview --> FinalDecision{人工判定结果}
+    
+    FinalDecision -- 正常 --> MarkPass[标注: 审核通过]
+    FinalDecision -- 欺诈 --> MarkReject[标注: 拒赔/拒办]
+    FinalDecision -- 存疑 --> MarkInvestigate[标注: 发起进一步调查]
+    
+    %% 结果存储
+    MarkPass --> LogHistory[记录至案件历史表]
+    MarkReject --> LogHistory
+    MarkInvestigate --> LogHistory
+    
+    LogHistory -.-> DB_History[(案件历史库)]
+    LogHistory --> End([结束: 案件处理完成])
+
+    %% 样式应用
+    class ManualInput,BulkUpload,AdjusterReview userAction;
+    class FeatureSync,Validation,LogHistory systemProcess;
+    class ModelInference,RiskLeveling,ShapExplain aiLogic;
+    class DB_History dataStore;
+</div></code></pre>
+<h3 id="42-数据流图dfd">4.2 数据流图（DFD）</h3>
+<p>本系统采用 分层数据流图 ，从顶层（0 层）到一层，逐步细化系统的数据流走向，明确数据的来源、处理过程、存储与输出。</p>
+<h4 id="421-零层数据流图系统整体概览">4.2.1 零层数据流图（系统整体概览）</h4>
+<ul>
+<li><strong>外部实体</strong>：理赔审核员、风控管理员、外部业务系统（可选）</li>
+<li><strong>系统边界</strong>：保险理赔风控系统</li>
+<li><strong>核心数据处理过程</strong>：数据管理、模型训练、欺诈检测、系统管理</li>
+<li><strong>数据存储</strong>：原始数据库、清洗后数据库、特征数据库、模型库、案件历史库、用户信息库</li>
+<li><strong>数据流走向</strong>：
+<ul>
+<li>外部实体向系统输入 原始理赔数据、模型配置参数、理赔案件信息、用户操作指令 ；</li>
+<li>系统通过核心处理过程对数据进行加工，将中间数据存入各类数据库 / 模型库；</li>
+<li>系统向外部实体输出 预处理报告、模型评估报告、欺诈检测结果、统计报表、操作反馈 。</li>
+</ul>
+</li>
+</ul>
+<h4 id="422-一层数据流图核心模块细化">4.2.2 一层数据流图（核心模块细化）</h4>
+<p>以 欺诈检测模块 为例，细化数据流：</p>
+<ul>
+<li><strong>外部实体</strong>：理赔审核员</li>
+<li><strong>数据处理过程</strong>：案件信息接收、数据校验、模型调用、预测结果生成、解释性输出、结果展示与存储</li>
+<li><strong>数据存储</strong>：模型库、案件历史库</li>
+<li><strong>数据流</strong>：</li>
+</ul>
+<pre><code class="language-mermaid"><div class="mermaid">graph LR
+    %% 外部实体
+    User1[理赔审核员]
+    User2[风险管理员]
+
+    %% 处理过程
+    P1((1.0 数据管理))
+    P2((2.0 模型训练))
+    P3((3.0 欺诈检测))
+    P4((4.0 用户管理))
+
+    %% 数据存储
+    D1[(D1 原始数据库)]
+    D2[(D2 特征数据库)]
+    D3[(D3 模型库)]
+    D4[(D4 案件历史库)]
+    D5[(D5 用户库)]
+
+    %% 数据流
+    User2 -- 原始数据上传 --> P1
+    P1 -- 清洗后的特征 --> D2
+    D2 -- 训练样本 --> P2
+    User2 -- 算法参数 --> P2
+    P2 -- 训练完成的模型 --> D3
+    
+    User1 -- 待测案件信息 --> P3
+    D3 -- 调用模型 --> P3
+    P3 -- 预测结果与解释 --> User1
+    User1 -- 人工判定反馈 --> P3
+    P3 -- 历史记录 --> D4
+
+    User2 -- 权限配置 --> P4
+    P4 -- 用户凭证 --> D5
+</div></code></pre>
+<h3 id="43-数据字典">4.3 数据字典</h3>
+<p>数据字典是系统的核心数据规范，定义了系统中所有核心数据项、数据表的名称、类型、长度、含义、约束条件等，为数据采集、处理、存储和开发提供统一标准，本系统核心数据字典分为 核心数据项 和 核心数据表 两部分。</p>
+<h4 id="431-核心数据项">4.3.1 核心数据项</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">数据项名称</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">长度</th>
+<th style="text-align:left">单位 / 取值范围</th>
+<th style="text-align:left">含义说明</th>
+<th style="text-align:left">约束条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">policy_id</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">保单唯一标识</td>
+<td style="text-align:left">非空，唯一</td>
+</tr>
+<tr>
+<td style="text-align:left">insurance_type</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">16</td>
+<td style="text-align:left">车险 / 意外健康险</td>
+<td style="text-align:left">险种类型</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">insurance_amount</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">16,2</td>
+<td style="text-align:left">元</td>
+<td style="text-align:left">保额</td>
+<td style="text-align:left">大于 0</td>
+</tr>
+<tr>
+<td style="text-align:left">premium</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">16,2</td>
+<td style="text-align:left">元</td>
+<td style="text-align:left">保费</td>
+<td style="text-align:left">大于 0</td>
+</tr>
+<tr>
+<td style="text-align:left">insure_date</td>
+<td style="text-align:left">日期</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">YYYY-MM-DD</td>
+<td style="text-align:left">投保日期</td>
+<td style="text-align:left">非空，早于事故日期 / 索赔日期</td>
+</tr>
+<tr>
+<td style="text-align:left">effect_date</td>
+<td style="text-align:left">日期</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">YYYY-MM-DD</td>
+<td style="text-align:left">保单生效日期</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">insuree_id</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">被保险人唯一标识</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">age</td>
+<td style="text-align:left">整数</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">18-100</td>
+<td style="text-align:left">被保险人年龄</td>
+<td style="text-align:left">非空，符合取值范围</td>
+</tr>
+<tr>
+<td style="text-align:left">gender</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">男 / 女 / 未知</td>
+<td style="text-align:left">被保险人性别</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">occupation</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">被保险人职业</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">marital_status</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">8</td>
+<td style="text-align:left">未婚 / 已婚 / 离异 / 丧偶</td>
+<td style="text-align:left">被保险人婚姻状况</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">claim_times</td>
+<td style="text-align:left">整数</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">0-∞</td>
+<td style="text-align:left">历史索赔次数</td>
+<td style="text-align:left">非空，大于等于 0</td>
+</tr>
+<tr>
+<td style="text-align:left">accident_date</td>
+<td style="text-align:left">日期</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">YYYY-MM-DD</td>
+<td style="text-align:left">事故日期</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">accident_type</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">事故类型（如车辆碰撞 / 意外摔伤）</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">has_witness</td>
+<td style="text-align:left">布尔值</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">0（无）/1（有）</td>
+<td style="text-align:left">是否有事故目击者</td>
+<td style="text-align:left">非空，仅支持 0/1</td>
+</tr>
+<tr>
+<td style="text-align:left">claim_amount</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">16,2</td>
+<td style="text-align:left">元</td>
+<td style="text-align:left">索赔金额</td>
+<td style="text-align:left">大于 0</td>
+</tr>
+<tr>
+<td style="text-align:left">claim_date</td>
+<td style="text-align:left">日期</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">YYYY-MM-DD</td>
+<td style="text-align:left">索赔日期</td>
+<td style="text-align:left">非空，晚于事故日期</td>
+</tr>
+<tr>
+<td style="text-align:left">is_paid</td>
+<td style="text-align:left">布尔值</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">0（未赔付）/1（已赔付）</td>
+<td style="text-align:left">是否已赔付</td>
+<td style="text-align:left">非空，仅支持 0/1</td>
+</tr>
+<tr>
+<td style="text-align:left">paid_amount</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">16,2</td>
+<td style="text-align:left">元</td>
+<td style="text-align:left">赔付金额</td>
+<td style="text-align:left">大于等于 0，小于等于索赔金额</td>
+</tr>
+<tr>
+<td style="text-align:left">is_fraud</td>
+<td style="text-align:left">布尔值</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">0（正常）/1（欺诈）</td>
+<td style="text-align:left">是否欺诈标签（训练数据用）</td>
+<td style="text-align:left">非空，仅支持 0/1</td>
+</tr>
+<tr>
+<td style="text-align:left">fraud_prob</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">6,4</td>
+<td style="text-align:left">0-1</td>
+<td style="text-align:left">欺诈概率</td>
+<td style="text-align:left">大于等于 0，小于等于 1</td>
+</tr>
+<tr>
+<td style="text-align:left">risk_level</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">4</td>
+<td style="text-align:left">低 / 中 / 高</td>
+<td style="text-align:left">风险等级</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">user_id</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">用户唯一标识</td>
+<td style="text-align:left">非空，唯一</td>
+</tr>
+<tr>
+<td style="text-align:left">user_name</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">16</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">用户名</td>
+<td style="text-align:left">非空，唯一</td>
+</tr>
+<tr>
+<td style="text-align:left">user_pwd</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">64</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">用户密码（加密存储）</td>
+<td style="text-align:left">非空</td>
+</tr>
+<tr>
+<td style="text-align:left">user_role</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">16</td>
+<td style="text-align:left">理赔审核员 / 风控管理员</td>
+<td style="text-align:left">用户角色</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">model_id</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">模型唯一标识</td>
+<td style="text-align:left">非空，唯一</td>
+</tr>
+<tr>
+<td style="text-align:left">model_algorithm</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left">逻辑回归 / 随机森林 / XGBoost / 神经网络</td>
+<td style="text-align:left">模型算法类型</td>
+<td style="text-align:left">非空，仅支持指定取值</td>
+</tr>
+<tr>
+<td style="text-align:left">model_auc</td>
+<td style="text-align:left">浮点数</td>
+<td style="text-align:left">6,4</td>
+<td style="text-align:left">0-1</td>
+<td style="text-align:left">模型 AUC 值</td>
+<td style="text-align:left">大于等于 0，小于等于 1</td>
+</tr>
+<tr>
+<td style="text-align:left">train_time</td>
+<td style="text-align:left">datetime</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">YYYY-MM-DD HH:MM:SS</td>
+<td style="text-align:left">模型训练时间</td>
+<td style="text-align:left">非空</td>
+</tr>
+</tbody>
+</table>
+<h4 id="432-核心数据表">4.3.2 核心数据表</h4>
+<h5 id="1保单信息表policy_info">（1）保单信息表（policy_info）</h5>
+<ul>
+<li><strong>表用途</strong>：存储保单的基础信息</li>
+<li><strong>主键</strong>：policy_id</li>
+<li><strong>关联键</strong>：insuree_id（关联被保险人信息表）</li>
+<li><strong>包含数据项</strong>：policy_id, insurance_type, insurance_amount, premium, insure_date, effect_date, insuree_id</li>
+</ul>
+<h5 id="2被保险人信息表insuree_info">（2）被保险人信息表（insuree_info）</h5>
+<ul>
+<li><strong>表用途</strong>：存储被保险人的个人基础信息</li>
+<li><strong>主键</strong>：insuree_id</li>
+<li><strong>包含数据项</strong>：insuree_id, age, gender, occupation, marital_status, claim_times</li>
+</ul>
+<h5 id="3事故与索赔信息表accident_claim_info">（3）事故与索赔信息表（accident_claim_info）</h5>
+<ul>
+<li><strong>表用途</strong>：存储事故详情与索赔相关信息</li>
+<li><strong>主键</strong>：id（自增）</li>
+<li><strong>关联键</strong>：policy_id（关联保单信息表）</li>
+<li><strong>包含数据项</strong>：id, policy_id, accident_date, accident_type, has_witness, claim_amount, claim_date, is_paid, paid_amount, is_fraud</li>
+</ul>
+<h5 id="4欺诈检测结果表fraud_detect_result">（4）欺诈检测结果表（fraud_detect_result）</h5>
+<ul>
+<li><strong>表用途</strong>：存储理赔案件的欺诈检测结果</li>
+<li><strong>主键</strong>：id（自增）</li>
+<li><strong>关联键</strong>：policy_id（关联保单信息表）、model_id（关联模型信息表）</li>
+<li><strong>包含数据项</strong>：id, policy_id, model_id, fraud_prob, risk_level, detect_time, shap_feature（关键特征，字符串格式）, manual_result（人工判定结果）</li>
+</ul>
+<h5 id="5模型信息表model_info">（5）模型信息表（model_info）</h5>
+<ul>
+<li><strong>表用途</strong>：存储训练完成的模型基础信息与评估指标</li>
+<li><strong>主键</strong>：model_id</li>
+<li><strong>包含数据项</strong>：model_id, model_algorithm, model_auc, precision（精确率）, recall（召回率）, train_time, param_config（参数配置，字符串格式）</li>
+</ul>
+<h5 id="6用户信息表user_info">（6）用户信息表（user_info）</h5>
+<ul>
+<li><strong>表用途</strong>：存储系统用户的基础信息与权限</li>
+<li><strong>主键</strong>：user_id</li>
+<li><strong>包含数据项</strong>：user_id, user_name, user_pwd, user_role, phone, email, create_time</li>
+</ul>
+<h5 id="7案件历史表case_history">（7）案件历史表（case_history）</h5>
+<ul>
+<li><strong>表用途</strong>：存储所有理赔案件的检测与处理历史，实现追溯</li>
+<li><strong>主键</strong>：id（自增）</li>
+<li><strong>关联键</strong>：policy_id, user_id（操作人）</li>
+<li><strong>包含数据项</strong>：id, policy_id, detect_result_id（关联欺诈检测结果表）, user_id, operate_time, manual_result, remark（备注）</li>
+</ul>
+<hr>
+<h2 id="5-系统设计">5. 系统设计</h2>
+<p>基于前期的需求分析，本系统采用分层架构设计，确保 AI 模型的推理能力与业务逻辑高效集成。</p>
+<h3 id="51-概要设计">5.1 概要设计</h3>
+<h4 id="511-系统架构图">5.1.1 系统架构图</h4>
+<p>系统采用Python AI 生态 运行环境，整体分为四层：</p>
+<ul>
+<li><strong>表现层（Frontend）</strong>：基于 Vue开发前端界面，负责理赔案件录入、风险图表展示、模型训练参数配置。</li>
+<li><strong>业务逻辑层（Backend）</strong>：基于Django框架，处理用户鉴权、数据预处理逻辑、任务调度（批量检测异步处理）。</li>
+<li><strong>模型推理层（AI Engine）</strong>：集成 Scikit-learn、XGBoost 等算法库，负责特征工程、模型训练及基于 SHAP 的解释性输出 。</li>
+<li><strong>数据层（Data Tier）</strong>：由关系型数据库（MySQL）存储结构化数据，模型库（文件系统）存储 .pkl 或 .h5 模型文件 。</li>
+</ul>
+<h4 id="512-功能结构图">5.1.2 功能结构图</h4>
+<p>系统功能划分为以下五大核心模块：</p>
+<ol>
+<li><strong>数据管理</strong>：数据导入、预处理、特征工程 。</li>
+<li><strong>模型训练</strong>：算法选择（LR/RF/XGB/NN）、训练评估、模型保存 。</li>
+<li><strong>欺诈检测</strong>：单条/批量预测、风险等级划分、SHAP 解释性输出 。</li>
+<li><strong>系统集成</strong>：RESTful API 服务、Web 管理门户 。</li>
+<li><strong>用户管理</strong>：RBAC 权限控制、注册登录 。</li>
+</ol>
+<h3 id="52-数据库设计">5.2 数据库设计</h3>
+<h4 id="521-实体关系图er-图">5.2.1 实体关系图（ER 图）</h4>
+<p>本系统的数据库设计旨在通过以下核心实体，打通从“业务基础数据”到“AI 智能推理”，再到“人工审核决策”的全链路闭环。</p>
+<h5 id="1-被保险人实体-insuree">1. 被保险人实体 (Insuree)</h5>
+<p>功能定位：存储投保客户的主体信息，是风险分析的原始源头。</p>
+<p>核心属性：包含年龄、职业、性别及历史索赔次数等关键静态特征。</p>
+<p>业务作用：通过统计被保险人的历史信用和行为模式，为模型提供基础风险画像。</p>
+<p>关联关系：与保单呈 1:N 关系，即一个被保险人名下可拥有多份保单。</p>
+<h5 id="2-保单实体-policy">2. 保单实体 (Policy)</h5>
+<p>功能定位：记录保险契约的核心条款与生效状态。</p>
+<p>核心属性：涵盖保额、保费、险种类型及生效日期等。</p>
+<p>业务作用：作为业务纽带，连接客户与具体的理赔事件；其中的保额与保费比例是识别高风险投保的重要参考。</p>
+<p>关联关系：向上关联唯一被保险人；向下与事故索赔、检测结果及案件历史呈 1:N 关系。</p>
+<h5 id="3-事故索赔实体-accident_claim">3. 事故索赔实体 (Accident_Claim)</h5>
+<p>功能定位：记录单次理赔申请的详细案情数据。</p>
+<p>核心属性：包含事故类型、索赔金额、是否有目击者及训练标签（is_fraud）等。</p>
+<p>业务作用：提供模型推理所需的动态特征；其真实标签是模型迭代优化的基础数据。</p>
+<p>关联关系：与欺诈检测结果呈 1:1 关系，确保每一次理赔申请都有且仅有一个对应的风险评估报告。</p>
+<h5 id="4-模型实体-model">4. 模型实体 (Model)</h5>
+<p>功能定位：存储 AI 算法的版本信息及其在验证集上的性能指标。</p>
+<p>核心属性：算法类型、AUC 值、精确率及训练时间配置等。</p>
+<p>业务作用：实现风险判定的可追溯性，确保每一条预测结论都能定位到具体的算法版本。</p>
+<p>关联关系：与欺诈检测结果呈 1:N 关系，一个已部署的模型可支撑海量案件的实时推理。</p>
+<h5 id="5-欺诈检测结果实体-fraud_detect_result">5. 欺诈检测结果实体 (Fraud_Detect_Result)</h5>
+<p>功能定位：存储 AI 引擎对理赔案件生成的实时定量评估。</p>
+<p>核心属性：欺诈概率、风险等级（低/中/高）及 SHAP 解释性特征。</p>
+<p>业务作用：将复杂的模型输出转化为业务可读的风险信号，为审核员提供决策支撑。</p>
+<p>关联关系：由模型执行生成，并对应唯一的保单与索赔记录。</p>
+<h5 id="6-用户实体-user">6. 用户实体 (User)</h5>
+<p>功能定位：管理系统操作者的身份、角色与权限。</p>
+<p>核心属性：用户名、加密密码及角色定位（理赔审核员/风控管理员）。</p>
+<p>业务作用：基于 RBAC 模型实现权限控制，区分审核权限与管理权限，保障数据安全。</p>
+<p>关联关系：与案件历史呈 1:N 关系，记录其所有的审核操作轨迹。</p>
+<h5 id="7-案件历史实体-case_history">7. 案件历史实体 (Case_History)</h5>
+<p>功能定位：记录理赔案件的全生命周期处理日志。</p>
+<p>核心属性：人工最终判定结论、操作时间及审核备注等。</p>
+<p>业务作用：作为审计审计追踪的依据，同时其人工反馈结果可用于未来模型的再训练优化。</p>
+<p>关联关系：作为枢纽实体，同步关联保单、检测结果与操作用户。</p>
+<pre><code class="language-mermaid"><div class="mermaid">erDiagram
+    INSUREE ||--o{ POLICY : "拥有"
+    POLICY ||--o{ ACCIDENT_CLAIM : "发生"
+    POLICY ||--o{ FRAUD_DETECT_RESULT : "生成"
+    ACCIDENT_CLAIM ||--|| FRAUD_DETECT_RESULT : "对应检测结果"
+    MODEL ||--o{ FRAUD_DETECT_RESULT : "执行推理"
+    USER ||--o{ CASE_HISTORY : "操作/审核"
+    POLICY ||--o{ CASE_HISTORY : "记录历史"
+    FRAUD_DETECT_RESULT ||--o{ CASE_HISTORY : "追溯"
+
+    INSUREE {
+        string insuree_id PK "被保险人唯一标识"
+        int age "年龄"
+        string gender "性别"
+        string occupation "职业"
+        string marital_status "婚姻状况"
+        int claim_times "历史索赔次数"
+    }
+
+    POLICY {
+        string policy_id PK "保单唯一标识"
+        string insuree_id FK "被保险人ID"
+        string insurance_type "险种(车险/健康险)"
+        float insurance_amount "保额"
+        float premium "保费"
+        date insure_date "投保日期"
+        date effect_date "生效日期"
+    }
+
+    ACCIDENT_CLAIM {
+        int id PK "自增主键"
+        string policy_id FK "保单ID"
+        date accident_date "事故日期"
+        string accident_type "事故类型"
+        boolean has_witness "是否有目击者"
+        float claim_amount "索赔金额"
+        date claim_date "索赔日期"
+        boolean is_fraud "是否欺诈(训练标签)"
+    }
+
+    MODEL {
+        string model_id PK "模型唯一标识"
+        string model_algorithm "算法类型"
+        float model_auc "AUC指标"
+        float precision "精确率"
+        datetime train_time "训练时间"
+        text param_config "参数配置"
+    }
+
+    FRAUD_DETECT_RESULT {
+        int id PK "自增主键"
+        string policy_id FK "保单ID"
+        string model_id FK "模型ID"
+        float fraud_prob "欺诈概率"
+        string risk_level "风险等级"
+        datetime detect_time "检测时间"
+        text shap_feature "SHAP解释特征"
+        string manual_result "人工初始判定"
+    }
+
+    USER {
+        string user_id PK "用户唯一标识"
+        string user_name "用户名"
+        string user_role "角色(审核员/管理员)"
+        string phone "联系电话"
+    }
+
+    CASE_HISTORY {
+        int id PK "自增主键"
+        string policy_id FK "保单ID"
+        string user_id FK "操作人ID"
+        int detect_result_id FK "关联结果ID"
+        datetime operate_time "操作时间"
+        string manual_result "最终判定结论"
+        string remark "备注"
+    }
+</div></code></pre>
+<h4 id="522-物理表设计部分核心表">5.2.2 物理表设计（部分核心表）</h4>
+<p>根据数据字典 ，定义以下核心物理表结构：</p>
+<h5 id="1-保单信息表-policy_info">1. 保单信息表 (policy_info)</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">约束</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">policy_id</td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">PRIMARY KEY</td>
+<td style="text-align:left">保单唯一标识</td>
+</tr>
+<tr>
+<td style="text-align:left">insuree_id</td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">FOREIGN KEY</td>
+<td style="text-align:left">关联被保险人</td>
+</tr>
+<tr>
+<td style="text-align:left">insurance_type</td>
+<td style="text-align:left">VARCHAR(16)</td>
+<td style="text-align:left">NOT NULL</td>
+<td style="text-align:left">险种（医疗保险）</td>
+</tr>
+<tr>
+<td style="text-align:left">insurance_amount</td>
+<td style="text-align:left">DECIMAL(16,2)</td>
+<td style="text-align:left">&gt;0</td>
+<td style="text-align:left">保额</td>
+</tr>
+</tbody>
+</table>
+<h5 id="2-欺诈检测结果表-fraud_detect_result">2. 欺诈检测结果表 (fraud_detect_result)</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">约束</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">id</td>
+<td style="text-align:left">INT</td>
+<td style="text-align:left">PRIMARY KEY, AUTO_INC</td>
+<td style="text-align:left">自增主键</td>
+</tr>
+<tr>
+<td style="text-align:left">policy_id</td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">FOREIGN KEY</td>
+<td style="text-align:left">关联保单</td>
+</tr>
+<tr>
+<td style="text-align:left">model_id</td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">FOREIGN KEY</td>
+<td style="text-align:left">关联使用的模型</td>
+</tr>
+<tr>
+<td style="text-align:left">fraud_prob</td>
+<td style="text-align:left">DECIMAL(6,4)</td>
+<td style="text-align:left">0-1</td>
+<td style="text-align:left">欺诈概率</td>
+</tr>
+<tr>
+<td style="text-align:left">risk_level</td>
+<td style="text-align:left">VARCHAR(4)</td>
+<td style="text-align:left">低/中/高</td>
+<td style="text-align:left">风险等级</td>
+</tr>
+<tr>
+<td style="text-align:left">shap_feature</td>
+<td style="text-align:left">TEXT</td>
+<td style="text-align:left">-</td>
+<td style="text-align:left">关键特征解释 (JSON 格式)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-产品设计界面设计图描述">6. 产品设计（界面设计图描述）</h2>
+<p>针对不同用户角色，设计以下主要交互界面：</p>
+<h3 id="61-理赔审核员案件风险工作台">6.1 理赔审核员——“案件风险工作台”</h3>
+<p>核心布局：</p>
+<ul>
+<li><strong>顶部</strong>：单条录入搜索框与批量上传按钮 。</li>
+<li><strong>左侧</strong>：待审核案件列表，按风险等级颜色标注（高风险标红）。</li>
+<li><strong>右侧详情页</strong>：
+<ul>
+<li>风险仪表盘：直观展示欺诈概率（0%-100%）。</li>
+<li>原因分析区：展示 SHAP 特征重要性条形图，说明为何判定为高风险 。</li>
+<li>审核操作栏：一键标注“通过”、“拒绝”或“发起调查” 。</li>
+</ul>
+</li>
+</ul>
+<h3 id="62-模型开发人员模型研发与监控中心">6.2 模型开发人员——“模型研发与监控中心”</h3>
+<p>该界面面向技术人员，侧重于参数控制、过程监控与效能评估。</p>
+<ul>
+<li><strong>数据统计区</strong>：展示系统全局视图，包括每日检测案件总量、欺诈检出率走势图以及数据预处理异常日志。</li>
+</ul>
+<p>算法配置：提供算法选型勾选框（LR/RF/XGBoost/NN）及超参数调节滑动条（如树深度、学习率等）。</p>
+<ul>
+<li>
+<p><strong>训练日志</strong>：实时滚动展示模型训练过程中的损失函数变化及日志信息。</p>
+</li>
+<li>
+<p><strong>评估可视化</strong>：</p>
+<ul>
+<li>模型训练完成后，自动渲染 ROC 曲线、PR 曲线及混淆矩阵热力图。</li>
+<li>支持横向对比不同特征工程方案下的模型指标差异。</li>
+</ul>
+</li>
+<li>
+<p><strong>版本管理中心</strong>：</p>
+<ul>
+<li>以列表形式展示所有历史训练模型及其 AUC 值。</li>
+</ul>
+</li>
+</ul>
+<p>提供“一键部署”功能，支持将表现最优的模型切换至生产环境提供 RESTful API 服务，并支持版本回滚。</p>
+
+</body>
+</html>
