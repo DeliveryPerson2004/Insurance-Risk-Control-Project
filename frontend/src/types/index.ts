@@ -109,7 +109,7 @@ export interface PredictSingleResponse {
   raw_prob: number;
   risk_level: 'high' | 'medium' | 'low';
   threshold_used: number;
-  feature_values: Record<string, number>;
+  feature_values: Record<string, number | string>;
   shap_top10: ShapItem[];
   detect_time: string;
 }

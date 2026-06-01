@@ -148,7 +148,16 @@ export default function PredictionForm({ onResult, loading }: Props) {
                   </div>
                 ))}
                 <div style={{ textAlign: 'right', marginTop: 16 }}>
-                  <Button type="primary" onClick={() => setCurrentStep((s) => Math.min(s + 1, 3))}>
+                  <Button type="primary" onClick={async () => {
+                    try {
+                      const currentFields = stepItems[currentStep].groups
+                        .flatMap((g) => getFieldsByGroup(g).map((f) => f.name));
+                      await form.validateFields(currentFields);
+                      setCurrentStep((s) => Math.min(s + 1, 3));
+                    } catch {
+                      // validation failed, Ant Design will show field errors
+                    }
+                  }}>
                     下一步
                   </Button>
                 </div>

@@ -38,6 +38,11 @@ export default function HighRiskTable() {
 
   useEffect(() => {
     fetchHighRisk(5).then(setItems).catch(() => {});
+
+    const interval = setInterval(() => {
+      fetchHighRisk(5).then(setItems).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

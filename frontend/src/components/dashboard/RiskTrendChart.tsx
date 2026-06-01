@@ -14,6 +14,11 @@ export default function RiskTrendChart() {
     fetchTrend(days)
       .then(setData)
       .finally(() => setLoading(false));
+
+    const interval = setInterval(() => {
+      fetchTrend(days).then(setData).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(interval);
   }, [days]);
 
   const config = {

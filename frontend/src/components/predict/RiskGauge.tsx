@@ -25,6 +25,9 @@ export default function RiskGauge({ fraudProb, riskLevel, threshold }: Props) {
   const nx = cx + r * Math.cos(rad);
   const ny = cy + r * Math.sin(rad);
 
+  // Helper to map probability → x position on the arc
+  const probToX = (prob: number) => 10 + prob * 180;
+
   return (
     <div style={{ textAlign: 'center', padding: '16px 0' }}>
       <svg width="220" height="120" viewBox="0 0 200 110">
@@ -58,11 +61,11 @@ export default function RiskGauge({ fraudProb, riskLevel, threshold }: Props) {
         />
         <circle cx={cx} cy={cy} r="4" fill="#333" />
         {/* 刻度标签 */}
-        <text x="10" y="112" fontSize="9" fill="#999" textAnchor="middle">0</text>
-        <text x="55" y="112" fontSize="9" fill="#999" textAnchor="middle">{threshold.toFixed(2)}</text>
-        <text x="100" y="112" fontSize="9" fill="#999" textAnchor="middle">0.5</text>
-        <text x="145" y="112" fontSize="9" fill="#999" textAnchor="middle">0.7</text>
-        <text x="190" y="112" fontSize="9" fill="#999" textAnchor="middle">1.0</text>
+        <text x={probToX(0)} y="112" fontSize="9" fill="#999" textAnchor="middle">0</text>
+        <text x={probToX(threshold)} y="112" fontSize="9" fill="#999" textAnchor="middle">{threshold.toFixed(2)}</text>
+        <text x={probToX(0.5)} y="112" fontSize="9" fill="#999" textAnchor="middle">0.5</text>
+        <text x={probToX(0.7)} y="112" fontSize="9" fill="#999" textAnchor="middle">0.7</text>
+        <text x={probToX(1.0)} y="112" fontSize="9" fill="#999" textAnchor="middle">1.0</text>
       </svg>
       <div style={{ marginTop: -8 }}>
         <Title level={3} style={{ color: cfg.color, marginBottom: 0 }}>

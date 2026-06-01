@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { message, Row, Col, Card, Button, Input } from 'antd';
+import { message, Row, Col, Card, Button, Input, Tooltip } from 'antd';
 import PredictionForm from '../components/predict/PredictionForm';
 import RiskGauge from '../components/predict/RiskGauge';
 import ShapExplanation from '../components/predict/ShapExplanation';
@@ -44,23 +44,32 @@ export default function PredictionPage() {
             <Col flex="160px">
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontWeight: 600, marginBottom: 16, color: '#666' }}>审核判定</div>
-                <Button
-                  type="primary"
-                  style={{ background: '#52c41a', borderColor: '#52c41a', width: '100%', marginBottom: 8 }}
-                >
-                  通过
-                </Button>
-                <Button
-                  danger
-                  style={{ width: '100%', marginBottom: 8 }}
-                >
-                  拒绝
-                </Button>
-                <Button
-                  style={{ background: '#faad14', borderColor: '#faad14', color: '#fff', width: '100%', marginBottom: 12 }}
-                >
-                  待调查
-                </Button>
+                <Tooltip title="功能开发中（Phase 3）">
+                  <Button
+                    type="primary"
+                    disabled
+                    style={{ background: '#52c41a', borderColor: '#52c41a', width: '100%', marginBottom: 8 }}
+                  >
+                    通过
+                  </Button>
+                </Tooltip>
+                <Tooltip title="功能开发中（Phase 3）">
+                  <Button
+                    danger
+                    disabled
+                    style={{ width: '100%', marginBottom: 8 }}
+                  >
+                    拒绝
+                  </Button>
+                </Tooltip>
+                <Tooltip title="功能开发中（Phase 3）">
+                  <Button
+                    disabled
+                    style={{ background: '#faad14', borderColor: '#faad14', color: '#fff', width: '100%', marginBottom: 12 }}
+                  >
+                    待调查
+                  </Button>
+                </Tooltip>
                 <Input.TextArea rows={3} placeholder="备注（可选）" />
               </div>
             </Col>
