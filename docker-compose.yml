@@ -38,11 +38,39 @@ services:
       MODEL_PATH: /app/modeling/xgb_fraud_model.pkl
     ports:
       - "8000:8000"
+    volumes:
+      - ./modeling:/app/modeling:ro
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: uv run celery -A backend.app.tasks.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/fraud_detect
+      REDIS_URL: redis://redis:6379/0
+      MODEL_PATH: /app/modeling/xgb_fraud_model.pkl
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./modeling:/app/modeling:ro
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
 
 volumes:
   pgdata:

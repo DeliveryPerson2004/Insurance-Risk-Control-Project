@@ -1,0 +1,2 @@
+-- 初始化数据库（docker compose 通过 POSTGRES_DB 环境变量自动创建）
+-- 此文件可用于后续初始化种子数据
