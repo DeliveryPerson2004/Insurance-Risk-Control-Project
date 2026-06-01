@@ -1,6 +1,8 @@
 """单条预测编排 — 校验 → 变换 → 推理 → 持久化."""
 
+import json
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
 
@@ -33,7 +35,7 @@ async def predict_single(
     db: AsyncSession, req: PredictSingleRequest
 ) -> PredictSingleResponse:
     """单条预测完整流程."""
-    # 确保惰性参数已加载（MISSING_COLS 等模块级常量在使用前需要）
+    # 确保惰性参数已加载
     feature_transform._load_params()
 
     # 1. 校验 insuree
@@ -50,10 +52,6 @@ async def predict_single(
     # 3. 合并 35 特征
     feature_dict = req.model_dump()
     del feature_dict["insuree_id"]
-    # 5 个缺失标记
-    for mc in feature_transform.MISSING_COLS:
-        base_col = mc.replace("_MISSING", "")
-        feature_dict[mc] = 1 if base_col in feature_dict and feature_dict[base_col] is None else 0
     # 3 个成员聚合
     feature_dict["MBR_CLAIM_COUNT"] = mbr_agg["MBR_CLAIM_COUNT"]
     feature_dict["MBR_AVG_SUB_AMT"] = mbr_agg["MBR_AVG_SUB_AMT"]
@@ -71,6 +69,8 @@ async def predict_single(
         select(ModelInfo.model_id).where(ModelInfo.is_active == True).limit(1)
     )
     model_id = model_result.scalar_one_or_none()
+    if model_id is None:
+        raise AppException("没有活跃的模型", status_code=503)
 
     # 7. FK 落库 — 自动生成合成骨
     synthetic_policy_id = f"PRED-{uuid.uuid4().hex[:8]}"
@@ -142,14 +142,12 @@ def _build_field_options() -> dict:
     # 确保惰性参数已加载（CONT_COLS 在 visible_cont_cols 计算中需要）
     feature_transform._load_params()
 
-    import pandas as pd
-
-    # 从训练集提取类别特征的可选值
-    train = pd.read_csv("data/train_eval_test/train.csv")
-    cat_cols = [
-        "ICD10_CHAPTER", "BH_PREFIX", "BH_CATEGORY",
-        "MBR_TYPE", "BEN_TYPE", "KIND_CODE", "POCY_PLAN_DESC",
-    ]
+    # 从烘焙的预处理参数中读取类别特征的可选值（Docker 无需 data/ 目录）
+    _params_path = os.path.join(os.path.dirname(__file__), "preprocess_params.json")
+    with open(_params_path, "r", encoding="utf-8") as f:
+        _baked_params = json.load(f)
+    cat_options: dict[str, list[str]] = _baked_params.get("cat_options", {})
+    cat_cols = _baked_params["cat_cols"]
 
     groups_order = ["诊断信息", "金额信息", "保单信息", "时间特征", "被保险人画像", "医院信息"]
 
@@ -207,11 +205,7 @@ def _build_field_options() -> dict:
             "required": True,
         }
         if ftype == "select":
-            if name in train.columns:
-                vals = train[name].dropna().unique().tolist()
-                option["options"] = sorted([str(v) for v in vals])
-            else:
-                option["options"] = []
+            option["options"] = cat_options.get(name, [])
         else:
             option["min"] = 0
             option["step"] = 0.01 if name not in {
