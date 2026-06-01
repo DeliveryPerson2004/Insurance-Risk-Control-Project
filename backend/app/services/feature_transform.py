@@ -40,6 +40,8 @@ async def compute_member_aggregates(
     from backend.app.models.accident_claim import AccidentClaim
     from backend.app.models.policy import Policy
 
+    # NOTE: Training used PROV_CODE for unique hospitals, but DB schema lacks this field.
+    # Using distinct policy_id as a proxy (each claim typically maps to one provider interaction).
     result = await db.execute(
         select(
             func.count(AccidentClaim.id).label("claim_count"),
@@ -67,10 +69,16 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
     """
     df = pd.DataFrame([feature_dict])
 
-    # 1) 类别特征 → category dtype
+    # 0) 缺失标记 — 必须在任何 fill 之前生成，否则 isnull() 恒为假
+    for col in MISSING_COLS:
+        if col not in df.columns:
+            base_col = col.replace("_MISSING", "")
+            df[col] = df[base_col].isnull().astype(int) if base_col in df.columns else 0
+
+    # 1) 类别特征 → category dtype（NaN 先用 'UNKNOWN' 填充，与训练一致）
     for col in CAT_COLS:
         if col in df.columns:
-            df[col] = df[col].astype(str).astype("category")
+            df[col] = df[col].fillna('UNKNOWN').astype(str).astype("category")
 
     # 2) 连续特征填充缺失
     for col in CONT_COLS:
@@ -79,13 +87,7 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
             med = FILL_VALUES.get(col, 0)
             df[col] = df[col].fillna(med)
 
-    # 3) 缺失标记（用户已传 0/1，这里仅兜底）
-    for col in MISSING_COLS:
-        if col not in df.columns:
-            base_col = col.replace("_MISSING", "")
-            df[col] = df[base_col].isnull().astype(int) if base_col in df.columns else 0
-
-    # 4) Winsor
+    # 3) Winsor
     for col in CONT_COLS:
         if col in SKIP_WINSOR or col not in df.columns:
             continue
@@ -93,13 +95,13 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
             lo, hi = WINSOR_BOUNDS[col]
             df[col] = df[col].clip(lo, hi)
 
-    # 5) log1p
+    # 4) log1p
     for col, lp in LOG_PARAMS.items():
         if col in df.columns:
             mn = lp["min"]
             df[col] = np.log1p(df[col].clip(lower=mn) - mn + 1)
 
-    # 6) StandardScaler
+    # 5) StandardScaler
     for col, sp in SCALER_PARAMS.items():
         if col in df.columns:
             mean = sp["mean"]
@@ -107,6 +109,6 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
             if std > 0:
                 df[col] = (df[col] - mean) / std
 
-    # 7) 确保 final 列序
+    # 6) 确保 final 列序
     existing = [c for c in FEATURE_COLS if c in df.columns]
     return df[existing]
