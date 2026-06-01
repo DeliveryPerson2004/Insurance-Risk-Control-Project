@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import String, Integer, DateTime, ForeignKey, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database import Base
@@ -19,7 +20,7 @@ class CaseHistory(Base):
         Integer, ForeignKey("fraud_detect_result.id"), nullable=False
     )
     user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("user_info.user_id"), nullable=False
+        UUID(as_uuid=False), ForeignKey("user_info.user_id"), nullable=False
     )
     operate_time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=func.now()

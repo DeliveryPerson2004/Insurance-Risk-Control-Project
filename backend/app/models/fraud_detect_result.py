@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import (
     String, Float, Integer, DateTime, ForeignKey, func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database import Base
@@ -25,7 +25,7 @@ class FraudDetectResult(Base):
         nullable=False,
     )
     model_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("model_info.model_id"), nullable=False
+        UUID(as_uuid=False), ForeignKey("model_info.model_id"), nullable=False
     )
     fraud_prob: Mapped[float] = mapped_column(Float, nullable=False, index=True)
     raw_prob: Mapped[float | None] = mapped_column(Float)
