@@ -1,12 +1,26 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Ignored default folder with query files
-/queries/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
+# ===== IDE =====
 .idea
+.vscode
+*.swp
+*.swo
+
+# ===== Claude Code =====
 .claude
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# ===== 原始数据（不入库） =====
+data/raw/*
+!data/raw/.gitkeep
+
+# ===== 模型文件（大文件，不入库） =====
+modeling/xgb_fraud_model.pkl
+
+# ===== 虚拟环境 =====
+venv/
+.venv/
+env/
