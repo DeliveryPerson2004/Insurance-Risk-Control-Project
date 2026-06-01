@@ -49,6 +49,10 @@ def create_app() -> FastAPI:
     from backend.app.routers.auth import router as auth_router
     app.include_router(auth_router)
 
+    # 注册 predict 路由
+    from backend.app.routers.predict import router as predict_router
+    app.include_router(predict_router)
+
     @app.get("/api/health")
     async def health():
         return {"code": 0, "data": {"status": "ok"}, "message": "ok"}
