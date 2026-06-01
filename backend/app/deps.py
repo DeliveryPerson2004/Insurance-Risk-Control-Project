@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.database import get_db
-from backend.app.models.user import User
+from backend.app.models.user import User, UserRole
 from backend.app.utils.security import decode_token
 from backend.app.utils.exceptions import AppException
 
@@ -42,6 +42,6 @@ async def require_admin(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """仅允许 admin 角色."""
-    if current_user.user_role != "admin":
+    if current_user.user_role != UserRole.admin:
         raise AppException("需要管理员权限", code=403, status_code=403)
     return current_user

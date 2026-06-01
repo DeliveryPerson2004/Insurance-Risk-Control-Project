@@ -1,6 +1,6 @@
 """policy_info — 保单."""
 
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlalchemy import String, Float, Integer, Date, DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,8 +18,8 @@ class Policy(Base):
     insurance_type: Mapped[str | None] = mapped_column(String(64))
     insurance_amount: Mapped[float | None] = mapped_column(Float)
     premium: Mapped[float | None] = mapped_column(Float)
-    insure_date: Mapped[datetime | None] = mapped_column(Date)
-    effect_date: Mapped[datetime | None] = mapped_column(Date)
+    insure_date: Mapped[date | None] = mapped_column(Date)
+    effect_date: Mapped[date | None] = mapped_column(Date)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

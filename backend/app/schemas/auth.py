@@ -1,14 +1,14 @@
 """认证相关 Pydantic v2 schemas."""
 
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=2, max_length=64)
     password: str = Field(..., min_length=6, max_length=128)
     display_name: str = Field(default="", max_length=64)
-    email: str | None = Field(default=None, max_length=128)
+    email: EmailStr | None = Field(default=None, max_length=128)
     phone: str | None = Field(default=None, max_length=32)
 
 

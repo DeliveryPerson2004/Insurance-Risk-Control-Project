@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Layout, Menu, Button, theme } from 'antd';
 import {
@@ -17,10 +17,17 @@ const { Header, Sider, Content } = Layout;
 
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout, fetchMe } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { token: themeToken } = theme.useToken();
+
+  // Bug #1 修复: 页面刷新后恢复用户信息
+  useEffect(() => {
+    if (isAuthenticated && !user) {
+      fetchMe();
+    }
+  }, [isAuthenticated, user, fetchMe]);
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
@@ -32,7 +39,8 @@ export default function AppLayout() {
       : []),
   ];
 
-  const selectedKey = '/' + location.pathname.split('/')[1];
+  // Bug #2 修复: 使用完整路径匹配（非 split 首段），确保二级路由正确高亮
+  const selectedKey = location.pathname;
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

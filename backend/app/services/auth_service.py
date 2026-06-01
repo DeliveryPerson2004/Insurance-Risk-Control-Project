@@ -3,10 +3,10 @@
 from datetime import datetime, timezone
 
 from jose import JWTError
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.models.user import User
+from backend.app.models.user import User, UserRole
 from backend.app.schemas.auth import (
     RegisterRequest,
     TokenResponse,
@@ -32,15 +32,15 @@ async def register(db: AsyncSession, req: RegisterRequest) -> LoginResponse:
     if existing.scalar_one_or_none() is not None:
         raise AppException("用户名已存在", code=1001, status_code=409)
 
-    # 检查是否为第一个用户
-    count_result = await db.execute(select(User))
-    is_first = count_result.first() is None
+    # 检查是否为第一个用户（exists 查询，不加载完整对象）
+    count_result = await db.execute(select(exists().select_from(User)))
+    is_first = not count_result.scalar()
 
     user = User(
         username=req.username,
         password_hash=hash_password(req.password),
         display_name=req.display_name or req.username,
-        user_role="admin" if is_first else "reviewer",
+        user_role=UserRole.admin if is_first else UserRole.reviewer,
         email=req.email,
         phone=req.phone,
     )

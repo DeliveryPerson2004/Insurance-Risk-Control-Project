@@ -26,8 +26,8 @@ rgzn-class/
 │   ├── xgb_fraud_model.pkl           # 训练好的模型（不入库）
 │   └── plots/                        # 评估可视化（含 SHAP）
 │
-├── backend/                          # 🖥 Django REST API 后端（待构建）
-├── frontend/                         # 🎨 Vue.js Web 前端（待构建）
+├── backend/                          # 🖥 FastAPI REST API 后端（待构建）
+├── frontend/                         # 🎨 React + TypeScript Web 前端（待构建）
 │
 └── images/                           # 项目图片
 ```
@@ -38,8 +38,8 @@ rgzn-class/
 |------|------|
 | 特征工程 | Python, pandas, scikit-learn |
 | 模型 | XGBoost + Optuna + 交叉验证 |
-| 后端 | Django REST Framework（待构建） |
-| 前端 | Vue.js（待构建） |
+| 后端 | FastAPI + SQLAlchemy + Celery（待构建） |
+| 前端 | React + TypeScript + Ant Design（待构建） |
 
 ## 最终模型性能 (v4)
 

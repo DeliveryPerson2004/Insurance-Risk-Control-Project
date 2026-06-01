@@ -1,13 +1,19 @@
 """user_info — 系统用户."""
 
+import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, Boolean, DateTime, func
+from sqlalchemy import String, Boolean, DateTime, func, Enum as SQLAlchemyEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.database import Base
+
+
+class UserRole(str, enum.Enum):
+    admin = "admin"
+    reviewer = "reviewer"
 
 
 class User(Base):
@@ -21,8 +27,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     display_name: Mapped[str] = mapped_column(String(64), nullable=False, default="")
-    user_role: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="reviewer", index=True
+    user_role: Mapped[UserRole] = mapped_column(
+        SQLAlchemyEnum(UserRole), nullable=False, default=UserRole.reviewer, index=True
     )
     phone: Mapped[str | None] = mapped_column(String(32))
     email: Mapped[str | None] = mapped_column(String(128), unique=True)

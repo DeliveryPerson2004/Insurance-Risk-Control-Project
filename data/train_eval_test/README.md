@@ -6,7 +6,8 @@
 |------|------|------|
 | v1 | - | 12 特征，含 4 个泄漏特征 |
 | v2 | 2026-05-11 | 移除 4 个泄漏特征，扩充至 29 个语义特征 |
-| **v3** | **2026-05-11** | **移除 10 个金额泄漏特征，最终 27 个纯语义特征** |
+| v3 | 2026-05-11 | 移除 10 个金额泄漏特征，最终 27 个纯语义特征 |
+| **v4** | **2026-05-24** | **ICD-10 分类修正 + 3 个成员聚合特征 + 5 个缺失标记，最终 35 特征** |
 
 ---
 
@@ -48,7 +49,7 @@ v2 模型 AUC 高达 0.9997，经排查发现 APP_AMT 和 BEN_SPEND 仍泄漏标
 
 ---
 
-## 二、最终特征集（27 个，v3）
+## 二、最终特征集（35 个，v4）
 
 ### 连续型特征（20 个）
 
@@ -87,6 +88,19 @@ v2 模型 AUC 高达 0.9997，经排查发现 APP_AMT 和 BEN_SPEND 仍泄漏标
 | `KIND_CODE` | 29 | 险种代码 |
 | `POCY_PLAN_DESC` | 606 | 保单计划描述 |
 
+### v4 新增特征（+3 个成员聚合 + 5 个缺失标记）
+
+| 特征名 | 说明 | 来源 |
+|--------|------|------|
+| `MBR_CLAIM_COUNT` | 该被保人历史理赔总次数 | 按 MBR_NO 分组聚合 |
+| `MBR_AVG_SUB_AMT` | 该被保人历史平均发票金额 | 按 MBR_NO 分组聚合 |
+| `MBR_UNIQUE_HOSPITALS` | 该被保人就诊的不同医院数 | 按 MBR_NO 分组聚合 |
+
+缺失标记特征（5 个，值为 0/1）：
+`TOTAL_RECEIPT_AMT_MISSING`, `DAYS_INCUR_TO_PAY_MISSING`, `DAYS_RCV_TO_CLOSE_MISSING`, `DAYS_RCV_TO_PAY_MISSING`, `KIND_CODE_MISSING`
+
+**v4 特征总计：7 个类别型 + 23 个连续型 + 5 个缺失标记 = 35 个特征**
+
 ---
 
 ## 三、运行方式
@@ -103,7 +117,7 @@ uv pip install xgboost>=2.0.0 scikit-learn>=1.3.0 optuna pandas matplotlib seabo
 rgzn-class/
 ├── data/
 │   ├── raw/                        # 原始 Excel 文件
-│   ├── preprocessing.py            # 特征工程脚本（v3）
+│   ├── preprocessing.py            # 特征工程脚本（v4）
 │   └── train_eval_test/
 │       ├── train.csv               # 训练集 46,146 条
 │       ├── eval.csv                # 验证集 15,382 条
@@ -134,13 +148,13 @@ python modeling.py
 
 | 指标 | 值 |
 |------|-----|
-| **ROC-AUC** | 0.9904 |
-| **PR-AUC** | 0.9283 |
-| **F1 Score** | 0.8680 |
-| **Precision (Fraud)** | 0.80 |
-| **Recall (Fraud)** | 0.95 |
-| **5-fold CV F1** | 0.9114 ± 0.0052 |
-| **最优阈值** | 0.35 |
+| **ROC-AUC** | 0.9934 |
+| **PR-AUC** | 0.9487 |
+| **F1 Score** | 0.8835 |
+| **Precision (Fraud)** | 0.87 |
+| **Recall (Fraud)** | 0.89 |
+| **5-fold CV F1** | 0.9259 ± 0.0037 |
+| **最优阈值** | 0.36 |
 
 ### 基线与消融
 
@@ -148,13 +162,13 @@ python modeling.py
 |------|-----|-----|
 | LogisticRegression | 0.8946 | 0.5545 |
 | RandomForest | 0.9945 | 0.9053 |
-| **XGBoost** | **0.9904** | **0.8680** |
+| **XGBoost** | **0.9934** | **0.8835** |
 
 ### 输出图表说明
 
 | 图表 | 含义 |
 |------|------|
-| `threshold_tuning.png` | F1/Precision/Recall 随阈值变化曲线，标注最优 F1 点。当前最优阈值 0.35 |
+| `threshold_tuning.png` | F1/Precision/Recall 随阈值变化曲线，标注最优 F1 点。当前最优阈值 0.36 |
 | `confusion_matrix.png` | 测试集混淆矩阵。真负/假正/假负/真正 |
 | `roc_curve.png` | ROC 曲线，AUC 越接近 1 越好。反映了模型对正负样本的整体排序能力 |
 | `pr_curve.png` | PR 曲线，适合不平衡数据集评估。关注 Precision 在高 Recall 区间的表现 |
@@ -162,13 +176,18 @@ python modeling.py
 
 ### 模型文件
 
-`xgb_fraud_model.pkl`（1.6 MB）：joblib 格式，包含模型、最优阈值、特征列名、类别列名。加载方式：
+`xgb_fraud_model.pkl`（2.6 MB）：joblib 格式，包含模型、校准器、最优阈值、特征列名、类别列名。加载方式：
 
 ```python
-import joblib
-m = joblib.load('xgb_fraud_model.pkl')
-model = m['model']        # XGBClassifier
-threshold = m['threshold'] # 0.35
+import joblib, numpy as np
+m = joblib.load('modeling/xgb_fraud_model.pkl')
+raw_prob = m['base_model'].predict_proba(X)[:, 1]       # XGBoost 原始概率
+calibrated_prob = m['calibrator'].predict(raw_prob)      # IsotonicRegression 校准
+pred = (calibrated_prob >= m['threshold']).astype(int)   # threshold = 0.36
+
+# 类别特征必须转为 category dtype
+# for col in m['cat_cols']:
+#     X[col] = X[col].astype('category')
 ```
 
 ---

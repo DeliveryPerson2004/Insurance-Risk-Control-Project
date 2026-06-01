@@ -54,6 +54,8 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/fraud_detect
       REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: dev-secret-change-in-production
+      JWT_ALGORITHM: HS256
       MODEL_PATH: /app/modeling/xgb_fraud_model.pkl
     depends_on:
       postgres:
@@ -63,6 +65,8 @@ services:
     volumes:
       - ./modeling:/app/modeling:ro
 
+  # 开发期: 前端使用 Vite dev server (localhost:5173) + proxy → backend。
+  # 生产部署: 取消注释下方 volumes，执行 cd frontend && npm run build 后重启。
   nginx:
     image: nginx:alpine
     ports:

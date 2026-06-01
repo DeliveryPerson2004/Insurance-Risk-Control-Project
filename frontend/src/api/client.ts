@@ -62,7 +62,8 @@ client.interceptors.response.use(
 
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
-      localStorage.clear();
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
       window.location.href = '/login';
       return Promise.reject(error);
     }
@@ -80,7 +81,8 @@ client.interceptors.response.use(
       return client(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      localStorage.clear();
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
       window.location.href = '/login';
       return Promise.reject(refreshError);
     } finally {

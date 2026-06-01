@@ -28,9 +28,14 @@ class Base(DeclarativeBase):
 
 
 async def get_db():
-    """FastAPI 依赖：获取数据库会话."""
+    """FastAPI 依赖：获取数据库会话.
+
+    上下文管理器退出时自动关闭 session，且若未 commit 则自动 rollback。
+    """
     async with async_session() as session:
         try:
             yield session
-        finally:
-            await session.close()
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise

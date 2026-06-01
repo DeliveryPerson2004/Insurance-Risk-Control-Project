@@ -1,21 +1,27 @@
 """JWT 编解码 + bcrypt 密码哈希."""
 
+import hashlib
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from backend.app.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _prehash(password: str) -> bytes:
+    """SHA-256 预哈希，确保 bcrypt 输入不超过 72 字节."""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    pwd_hash = _prehash(password)
+    return bcrypt.hashpw(pwd_hash, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    pwd_hash = _prehash(plain_password)
+    return bcrypt.checkpw(pwd_hash, hashed_password.encode("utf-8"))
 
 
 def create_access_token(user_id: str, role: str) -> str:
