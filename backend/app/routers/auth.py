@@ -1,6 +1,7 @@
 """认证路由 — POST /api/auth/*."""
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,21 +24,30 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
-@router.post("/register", response_model=LoginResponse)
+def ok(data):
+    """统一成功响应."""
+    return JSONResponse(content={"code": 0, "data": data, "message": "ok"})
+
+
+@router.post("/register")
 async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    return await auth_service.register(db, req)
+    result = await auth_service.register(db, req)
+    return ok(result.model_dump(mode="json"))
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login")
 async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
-    return await auth_service.login(db, req.username, req.password)
+    result = await auth_service.login(db, req.username, req.password)
+    return ok(result.model_dump(mode="json"))
 
 
-@router.post("/refresh", response_model=TokenResponse)
+@router.post("/refresh")
 async def refresh(req: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    return await auth_service.refresh_access_token(db, req.refresh_token)
+    result = await auth_service.refresh_access_token(db, req.refresh_token)
+    return ok(result.model_dump(mode="json"))
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def me(current_user: User = Depends(get_current_user)):
-    return UserResponse.model_validate(current_user)
+    result = UserResponse.model_validate(current_user)
+    return ok(result.model_dump(mode="json"))
