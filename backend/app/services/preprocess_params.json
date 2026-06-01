@@ -1,0 +1,295 @@
+{
+  "cat_cols": [
+    "ICD10_CHAPTER",
+    "BH_PREFIX",
+    "BH_CATEGORY",
+    "MBR_TYPE",
+    "BEN_TYPE",
+    "KIND_CODE",
+    "POCY_PLAN_DESC"
+  ],
+  "cont_cols": [
+    "SUB_AMT",
+    "TOTAL_RECEIPT_AMT",
+    "ORG_PRES_AMT_VALUE",
+    "COPAY_PCT",
+    "NO_OF_YR",
+    "POLICY_CNT",
+    "INVOICE_CNT",
+    "DAYS_INCUR_TO_PAY",
+    "DAYS_RCV_TO_CLOSE",
+    "DAYS_HOSPITALIZATION",
+    "DAYS_RCV_TO_PAY",
+    "IS_INPATIENT",
+    "INCUR_MONTH",
+    "INCUR_DAYOFWEEK",
+    "INCUR_QUARTER",
+    "INCUR_IS_WEEKEND",
+    "PROV_LEVEL_ORDINAL",
+    "RECEIPT_TO_SUB_RATIO",
+    "IS_NEW_INSURED",
+    "IS_LONGTERM_INSURED",
+    "MBR_CLAIM_COUNT",
+    "MBR_AVG_SUB_AMT",
+    "MBR_UNIQUE_HOSPITALS"
+  ],
+  "missing_cols": [
+    "TOTAL_RECEIPT_AMT_MISSING",
+    "DAYS_INCUR_TO_PAY_MISSING",
+    "DAYS_RCV_TO_CLOSE_MISSING",
+    "DAYS_RCV_TO_PAY_MISSING",
+    "KIND_CODE_MISSING"
+  ],
+  "feature_cols": [
+    "SUB_AMT",
+    "TOTAL_RECEIPT_AMT",
+    "ORG_PRES_AMT_VALUE",
+    "COPAY_PCT",
+    "NO_OF_YR",
+    "POLICY_CNT",
+    "INVOICE_CNT",
+    "DAYS_INCUR_TO_PAY",
+    "DAYS_RCV_TO_CLOSE",
+    "DAYS_HOSPITALIZATION",
+    "DAYS_RCV_TO_PAY",
+    "IS_INPATIENT",
+    "INCUR_MONTH",
+    "INCUR_DAYOFWEEK",
+    "INCUR_QUARTER",
+    "INCUR_IS_WEEKEND",
+    "PROV_LEVEL_ORDINAL",
+    "RECEIPT_TO_SUB_RATIO",
+    "IS_NEW_INSURED",
+    "IS_LONGTERM_INSURED",
+    "MBR_CLAIM_COUNT",
+    "MBR_AVG_SUB_AMT",
+    "MBR_UNIQUE_HOSPITALS",
+    "ICD10_CHAPTER",
+    "BH_PREFIX",
+    "BH_CATEGORY",
+    "MBR_TYPE",
+    "BEN_TYPE",
+    "KIND_CODE",
+    "POCY_PLAN_DESC",
+    "TOTAL_RECEIPT_AMT_MISSING",
+    "DAYS_INCUR_TO_PAY_MISSING",
+    "DAYS_RCV_TO_CLOSE_MISSING",
+    "DAYS_RCV_TO_PAY_MISSING",
+    "KIND_CODE_MISSING"
+  ],
+  "fill_values": {
+    "SUB_AMT": 57.8,
+    "TOTAL_RECEIPT_AMT": 65.0,
+    "ORG_PRES_AMT_VALUE": 37.8,
+    "COPAY_PCT": 80.0,
+    "NO_OF_YR": 1.0,
+    "POLICY_CNT": 1.0,
+    "INVOICE_CNT": 80.0,
+    "DAYS_INCUR_TO_PAY": 77.0,
+    "DAYS_RCV_TO_CLOSE": 2.0,
+    "DAYS_HOSPITALIZATION": 0.0,
+    "DAYS_RCV_TO_PAY": 11.0,
+    "IS_INPATIENT": 0.0,
+    "INCUR_MONTH": 1.0,
+    "INCUR_DAYOFWEEK": 2.0,
+    "INCUR_QUARTER": 1.0,
+    "INCUR_IS_WEEKEND": 0.0,
+    "PROV_LEVEL_ORDINAL": 3.0,
+    "RECEIPT_TO_SUB_RATIO": 0.0,
+    "IS_NEW_INSURED": 1.0,
+    "IS_LONGTERM_INSURED": 0.0,
+    "MBR_CLAIM_COUNT": 5.0,
+    "MBR_AVG_SUB_AMT": 106.95,
+    "MBR_UNIQUE_HOSPITALS": 1.0
+  },
+  "winsor_bounds": {
+    "SUB_AMT": [
+      0.0,
+      2088.6309999999203
+    ],
+    "TOTAL_RECEIPT_AMT": [
+      0.0,
+      1086.64
+    ],
+    "ORG_PRES_AMT_VALUE": [
+      0.0,
+      1164.2339999999986
+    ],
+    "DAYS_INCUR_TO_PAY": [
+      0.0,
+      421.8999999999942
+    ],
+    "DAYS_RCV_TO_CLOSE": [
+      1.0,
+      30.0
+    ],
+    "DAYS_HOSPITALIZATION": [
+      0.0,
+      0.0
+    ],
+    "DAYS_RCV_TO_PAY": [
+      0.0,
+      162.0
+    ],
+    "RECEIPT_TO_SUB_RATIO": [
+      0.0,
+      3.5
+    ],
+    "MBR_CLAIM_COUNT": [
+      1.0,
+      35.0
+    ],
+    "MBR_AVG_SUB_AMT": [
+      12.0,
+      2522.195
+    ]
+  },
+  "skip_winsor": [
+    "IS_LONGTERM_INSURED",
+    "IS_INPATIENT",
+    "IS_NEW_INSURED",
+    "PROV_LEVEL_ORDINAL",
+    "INCUR_QUARTER",
+    "COPAY_PCT",
+    "INCUR_IS_WEEKEND",
+    "NO_OF_YR",
+    "INVOICE_CNT",
+    "INCUR_DAYOFWEEK",
+    "INCUR_MONTH",
+    "POLICY_CNT"
+  ],
+  "log_params": {
+    "SUB_AMT": {
+      "min": 0.0,
+      "skew": 4.627982077333886
+    },
+    "TOTAL_RECEIPT_AMT": {
+      "min": 0.0,
+      "skew": 4.147226906356681
+    },
+    "ORG_PRES_AMT_VALUE": {
+      "min": 0.0,
+      "skew": 3.6815662376195886
+    },
+    "DAYS_INCUR_TO_PAY": {
+      "min": 0.0,
+      "skew": 1.5953421359770028
+    },
+    "DAYS_RCV_TO_CLOSE": {
+      "min": 1.0,
+      "skew": 6.375671811391285
+    },
+    "DAYS_RCV_TO_PAY": {
+      "min": 0.0,
+      "skew": 1.5684780361783603
+    },
+    "RECEIPT_TO_SUB_RATIO": {
+      "min": 0.0,
+      "skew": 1.4809193968314698
+    },
+    "MBR_CLAIM_COUNT": {
+      "min": 1.0,
+      "skew": 2.1230711819605945
+    },
+    "MBR_AVG_SUB_AMT": {
+      "min": 12.0,
+      "skew": 5.550877218221568
+    }
+  },
+  "scaler_params": {
+    "SUB_AMT": {
+      "mean": 4.116302828379836,
+      "std": 1.3686272316056172
+    },
+    "TOTAL_RECEIPT_AMT": {
+      "mean": 4.210736829254832,
+      "std": 0.9358170434087718
+    },
+    "ORG_PRES_AMT_VALUE": {
+      "mean": 3.6067740659464853,
+      "std": 1.5303187516526546
+    },
+    "COPAY_PCT": {
+      "mean": 73.45546150745668,
+      "std": 21.223595186017864
+    },
+    "NO_OF_YR": {
+      "mean": 1.596130592503023,
+      "std": 1.0148038198798583
+    },
+    "POLICY_CNT": {
+      "mean": 1.0055648736851686,
+      "std": 0.07439022695244779
+    },
+    "INVOICE_CNT": {
+      "mean": 73.45546150745668,
+      "std": 21.223595186017864
+    },
+    "DAYS_INCUR_TO_PAY": {
+      "mean": 4.066471017928735,
+      "std": 1.2885037120355747
+    },
+    "DAYS_RCV_TO_CLOSE": {
+      "mean": 1.1620058398182442,
+      "std": 0.39102805949388114
+    },
+    "DAYS_HOSPITALIZATION": {
+      "mean": 0.0,
+      "std": 1.0
+    },
+    "DAYS_RCV_TO_PAY": {
+      "mean": 2.6702972311959607,
+      "std": 1.285562861882631
+    },
+    "IS_INPATIENT": {
+      "mean": 0.009634512618481101,
+      "std": 0.0976815682976345
+    },
+    "INCUR_MONTH": {
+      "mean": 1.0,
+      "std": 1.0
+    },
+    "INCUR_DAYOFWEEK": {
+      "mean": 2.6128512176411696,
+      "std": 1.8809127549896116
+    },
+    "INCUR_QUARTER": {
+      "mean": 1.0,
+      "std": 1.0
+    },
+    "INCUR_IS_WEEKEND": {
+      "mean": 0.19863218525308474,
+      "std": 0.3989704753921886
+    },
+    "PROV_LEVEL_ORDINAL": {
+      "mean": 2.503868107292845,
+      "std": 1.5366803596649194
+    },
+    "RECEIPT_TO_SUB_RATIO": {
+      "mean": 0.8839352555960289,
+      "std": 0.22070604743876476
+    },
+    "IS_NEW_INSURED": {
+      "mean": 0.6948030840842012,
+      "std": 0.46049077996338167
+    },
+    "IS_LONGTERM_INSURED": {
+      "mean": 0.011727841271079559,
+      "std": 0.10765825100845694
+    },
+    "MBR_CLAIM_COUNT": {
+      "mean": 1.8447142133372636,
+      "std": 0.6642802844450738
+    },
+    "MBR_AVG_SUB_AMT": {
+      "mean": 4.553320595504862,
+      "std": 1.0416107497280993
+    },
+    "MBR_UNIQUE_HOSPITALS": {
+      "mean": 1.4316287657162174,
+      "std": 0.7722904234424713
+    }
+  },
+  "n_features": 35,
+  "description": "训练时提取的预处理参数。Phase 2 feature_transform.py 对单条输入执行相同变换。"
+}
