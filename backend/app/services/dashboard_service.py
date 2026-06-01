@@ -104,7 +104,7 @@ async def get_high_risk(db: AsyncSession, limit: int = 5) -> list[dict]:
             "fraud_prob": row.fraud_prob,
             "risk_level": row.risk_level,
             "claim_amount": row.claim_amount,
-            "detect_time": row.detect_time,
+            "detect_time": row.detect_time.isoformat(),
         }
         for row in rows
     ]

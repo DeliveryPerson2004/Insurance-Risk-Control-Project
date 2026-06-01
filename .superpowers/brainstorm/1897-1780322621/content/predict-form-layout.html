@@ -1,0 +1,132 @@
+<h2>单条预测页面 — 布局设计</h2>
+<p class="subtitle">混合模式：默认分组折叠面板，可切换向导</p>
+
+<div class="section">
+  <h3>页面整体布局（左右分栏）</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">填表模式（折叠面板）</div>
+      <div class="mockup-body">
+        <div class="mock-nav">单条预测</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;padding:8px 16px;gap:8px;">
+          <span style="font-size:12px;">切换模式：</span>
+          <button class="mock-button" style="font-size:11px;">折叠面板</button>
+          <button class="mock-button" style="font-size:11px;opacity:0.5;">向导</button>
+        </div>
+        <div style="padding:8px;">
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▼ 诊断信息 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">ICD10_CHAPTER · DIAG_CODE · ...</span></div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 金额信息 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">SUB_AMT · TOTAL_RECEIPT_AMT · ...</span></div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 保单信息 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">KIND_CODE · NO_OF_YR · ...</span></div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 时间特征 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">DAYS_INCUR_TO_PAY · ...</span></div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 被保险人画像 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">MBR_TYPE · IS_NEW_INSURED · ...</span></div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 医院信息 <span style="font-weight:normal;font-size:11px;color:#999;margin-left:8px;">PROV_LEVEL_ORDINAL · ...</span></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #f0f0f0;">
+          <button class="mock-button" style="font-size:11px;">重置</button>
+          <button class="mock-button" style="background:#1677ff;color:#fff;">提交预测</button>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">展开诊断信息后的效果</div>
+      <div class="mockup-body">
+        <div class="mock-nav">单条预测</div>
+        <div style="padding:8px;">
+          <div style="border:2px solid #1677ff;border-radius:6px;margin-bottom:6px;padding:12px;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:12px;">▼ 诊断信息</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:180px;"><div style="font-size:11px;color:#666;margin-bottom:2px;">ICD10_CHAPTER *</div><input class="mock-input" placeholder="请选择诊断大类" style="width:100%;"></div>
+              <div style="flex:1;min-width:180px;"><div style="font-size:11px;color:#666;margin-bottom:2px;">BH_PREFIX *</div><input class="mock-input" placeholder="请选择受益前缀" style="width:100%;"></div>
+              <div style="flex:1;min-width:180px;"><div style="font-size:11px;color:#666;margin-bottom:2px;">BH_CATEGORY *</div><input class="mock-input" placeholder="请选择受益类别" style="width:100%;"></div>
+              <div style="flex:1;min-width:180px;"><div style="font-size:11px;color:#666;margin-bottom:2px;">BEN_TYPE *</div><input class="mock-input" placeholder="请选择受益类型" style="width:100%;"></div>
+            </div>
+          </div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 金额信息 · 6 fields</div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 保单信息 · 4 fields</div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 时间特征 · 6 fields</div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 被保险人画像 · 5 fields</div>
+          <div style="border:1px solid #d9d9d9;border-radius:6px;margin-bottom:6px;padding:10px 12px;font-weight:600;font-size:13px;cursor:pointer;">▶ 医院信息 · 3 fields</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #f0f0f0;">
+          <button class="mock-button" style="font-size:11px;">重置</button>
+          <button class="mock-button" style="background:#1677ff;color:#fff;">提交预测</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>提交后的结果展示区</h3>
+  <p class="subtitle">三个组件横向排列：RiskGauge | ShapExplanation | 人工标注快照</p>
+</div>
+
+<div class="mockup" style="margin-bottom:24px;">
+  <div class="mockup-header">预测结果区 — 在表单下方展开</div>
+  <div class="mockup-body">
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      <!-- 仪表盘指针 -->
+      <div style="flex:0 0 220px;text-align:center;border:1px solid #f0f0f0;border-radius:8px;padding:20px 16px;">
+        <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:12px;">欺诈风险评估</div>
+        <div style="position:relative;width:180px;height:90px;margin:0 auto;background:conic-gradient(from 180deg,#ff4d4f 0deg,#faad14 72deg,#52c41a 144deg,#e8e8e8 180deg);border-radius:90px 90px 0 0;"></div>
+        <div style="font-size:32px;font-weight:700;color:#cf1322;margin-top:-8px;">高风险</div>
+        <div style="font-size:24px;font-weight:800;color:#ff4d4f;">0.78</div>
+        <div style="font-size:11px;color:#999;">校准后概率 ∙ 阈值 0.36</div>
+      </div>
+      <!-- SHAP 特征解释 -->
+      <div style="flex:1;border:1px solid #f0f0f0;border-radius:8px;padding:16px;">
+        <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:12px;">Top 10 SHAP 疑点特征</div>
+        <div style="margin-bottom:8px;font-size:12px;color:#cf1322;">⬆ MBR_CLAIM_COUNT：12.0 (SHAP +1.25，推高欺诈概率)</div>
+        <div style="margin-bottom:8px;font-size:12px;color:#cf1322;">⬆ CLAIM_AMT：8,500.0 (SHAP +0.89，推高欺诈概率)</div>
+        <div style="margin-bottom:8px;font-size:12px;color:#cf1322;">⬆ DAYS_HOSPITALIZATION：0.0 (SHAP +0.67，推高欺诈概率)</div>
+        <div style="margin-bottom:8px;font-size:12px;color:#3f8600;">⬇ RECEIPT_TO_SUB_RATIO：1.2 (SHAP -0.45，降低欺诈概率)</div>
+        <div style="margin-bottom:4px;font-size:12px;color:#3f8600;">⬇ IS_LONGTERM_INSURED：0.0 (SHAP -0.32，降低欺诈概率)</div>
+        <div style="font-size:11px;color:#999;margin-top:8px;">仅展示 Top 10，完整 35 特征值已存入数据库</div>
+      </div>
+      <!-- 快捷操作 -->
+      <div style="flex:0 0 150px;border:1px solid #f0f0f0;border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:16px;">审核判定</div>
+        <button class="mock-button" style="background:#52c41a;color:#fff;width:100%;margin-bottom:8px;">✓ 通过</button>
+        <button class="mock-button" style="background:#ff4d4f;color:#fff;width:100%;margin-bottom:8px;">✕ 拒绝</button>
+        <button class="mock-button" style="background:#faad14;color:#fff;width:100%;">⊙ 待调查</button>
+        <div style="margin-top:12px;"><textarea class="mock-input" placeholder="备注（可选）" style="width:100%;height:40px;resize:none;font-size:11px;"></textarea></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>组件结构总览</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <tr style="background:#fafafa;">
+      <th style="text-align:left;padding:8px;border:1px solid #e8e8e8;">组件</th>
+      <th style="text-align:left;padding:8px;border:1px solid #e8e8e8;">文件</th>
+      <th style="text-align:left;padding:8px;border:1px solid #e8e8e8;">职责</th>
+      <th style="text-align:left;padding:8px;border:1px solid #e8e8e8;">状态</th>
+    </tr>
+    <tr>
+      <td style="padding:8px;border:1px solid #e8e8e8;">PredictionForm</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;font-family:monospace;">components/predict/PredictionForm.tsx</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">32 字段表单 + 模式切换（折叠/向导）+ 提交逻辑</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">Ant Design Form + Collapse / Steps</td>
+    </tr>
+    <tr style="background:#fafafa;">
+      <td style="padding:8px;border:1px solid #e8e8e8;">RiskGauge</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;font-family:monospace;">components/predict/RiskGauge.tsx</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">半圆弧仪表盘：概率值 + 指针 + 风险等级色标</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">纯 CSS/SVG 实现，无外部依赖</td>
+    </tr>
+    <tr>
+      <td style="padding:8px;border:1px solid #e8e8e8;">ShapExplanation</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;font-family:monospace;">components/predict/ShapExplanation.tsx</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">SHAP Top 10 列表 + 影响方向箭头 + 正负色标</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">简洁列表 + 颜色编码</td>
+    </tr>
+    <tr style="background:#fafafa;">
+      <td style="padding:8px;border:1px solid #e8e8e8;">PredictionPage</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;font-family:monospace;">pages/PredictionPage.tsx</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">组合 3 组件 + 结果状态管理</td>
+      <td style="padding:8px;border:1px solid #e8e8e8;">表单上方，结果区下方</td>
+    </tr>
+  </table>
+</div>

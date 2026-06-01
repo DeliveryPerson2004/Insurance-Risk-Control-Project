@@ -65,14 +65,13 @@ services:
     volumes:
       - ./modeling:/app/modeling:ro
 
-  # 开发期: 前端使用 Vite dev server (localhost:5173) + proxy → backend。
-  # 生产部署: 取消注释下方 volumes，执行 cd frontend && npm run build 后重启。
   nginx:
     image: nginx:alpine
     ports:
       - "80:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
       - backend
 

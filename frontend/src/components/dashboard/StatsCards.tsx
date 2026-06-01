@@ -38,7 +38,7 @@ export default function StatsCards() {
             title="今日高风险"
             value={stats?.today_high_risk ?? 0}
             prefix={<WarningOutlined />}
-            valueStyle={{ color: '#cf1322' }}
+            styles={{ content: { color: '#cf1322' } }}
           />
         </Card>
       </Col>
@@ -48,7 +48,7 @@ export default function StatsCards() {
             title="今日已处理"
             value={stats?.today_processed ?? 0}
             prefix={<CheckCircleOutlined />}
-            valueStyle={{ color: '#3f8600' }}
+            styles={{ content: { color: '#3f8600' } }}
           />
         </Card>
       </Col>
