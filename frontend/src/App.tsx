@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import PredictionPage from './pages/PredictionPage';
 import AppLayout from './components/layout/AppLayout';
 
 const queryClient = new QueryClient();
@@ -56,7 +57,7 @@ export default function App() {
                 }
               >
                 <Route index element={<DashboardPage />} />
-                <Route path="predict/single" element={<div>单条预测（Phase 2）</div>} />
+                <Route path="predict/single" element={<PredictionPage />} />
                 <Route path="predict/batch" element={<div>批量预测（Phase 3）</div>} />
                 <Route path="cases" element={<div>案件管理（Phase 3）</div>} />
                 <Route path="admin" element={<div>管理面板（Phase 4）</div>} />
