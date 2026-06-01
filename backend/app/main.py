@@ -53,6 +53,10 @@ def create_app() -> FastAPI:
     from backend.app.routers.predict import router as predict_router
     app.include_router(predict_router)
 
+    # 注册 dashboard 路由
+    from backend.app.routers.dashboard import router as dashboard_router
+    app.include_router(dashboard_router)
+
     @app.get("/api/health")
     async def health():
         return {"code": 0, "data": {"status": "ok"}, "message": "ok"}
