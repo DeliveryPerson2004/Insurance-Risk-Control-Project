@@ -8,11 +8,12 @@ import pandas as pd
 import joblib
 import shap
 
+from backend.app.config import settings
 from backend.app.utils.exceptions import AppException
 
 logger = logging.getLogger(__name__)
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "modeling/xgb_fraud_model.pkl")
+MODEL_PATH = settings.MODEL_PATH
 
 # ---- 模块级单例 ----
 _model_bundle: dict | None = None
@@ -50,6 +51,14 @@ def get_feature_cols() -> list[str]:
     return _model_bundle["feature_cols"]
 
 
+def _safe_value(raw_val):
+    """Convert feature value for JSON: numeric -> float, string -> str."""
+    try:
+        return float(raw_val)
+    except (ValueError, TypeError):
+        return str(raw_val)
+
+
 def predict(X: pd.DataFrame) -> dict:
     """
     对 (1, 35) DataFrame 执行推理.
@@ -64,6 +73,14 @@ def predict(X: pd.DataFrame) -> dict:
     """
     _load_model()
 
+    expected_cols = _model_bundle["feature_cols"]
+    if X.shape[1] != len(expected_cols) or list(X.columns) != expected_cols:
+        raise AppException(
+            f"特征列不匹配: 期望 {len(expected_cols)} 列 {expected_cols}, "
+            f"实际 {X.shape[1]} 列 {list(X.columns)}",
+            status_code=400,
+        )
+
     # Step 1: 原始概率
     raw_prob = float(_model_bundle["base_model"].predict_proba(X)[:, 1][0])
 
@@ -72,6 +89,8 @@ def predict(X: pd.DataFrame) -> dict:
     fraud_prob = max(0.0, min(1.0, fraud_prob))
 
     # Step 3: 风险等级
+    # 注意: 0.7 是业务决策阈值，高于最优二分类阈值 (threshold≈0.36)，
+    # 用于将高风险案件标记为 "high" 以便人工优先审核
     threshold = _model_bundle["threshold"]
     if fraud_prob >= 0.7:
         risk_level = "high"
@@ -80,25 +99,22 @@ def predict(X: pd.DataFrame) -> dict:
     else:
         risk_level = "low"
 
-    # Step 4: SHAP
-    shap_vals = _explainer.shap_values(X)
-    feature_names = _model_bundle["feature_cols"]
-    def _safe_value(raw_val):
-        """Convert feature value for JSON: numeric -> float, string -> str."""
-        try:
-            return float(raw_val)
-        except (ValueError, TypeError):
-            return str(raw_val)
-
-    items = []
-    for i, name in enumerate(feature_names):
-        items.append({
-            "feature": name,
-            "value": _safe_value(X.iloc[0][name]),
-            "shap_value": float(shap_vals[0][i]),
-        })
-    items.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
-    shap_top10 = items[:10]
+    # Step 4: SHAP（失败不影响主流程，回退为空列表）
+    try:
+        shap_vals = _explainer.shap_values(X)
+        feature_names = expected_cols
+        items = []
+        for i, name in enumerate(feature_names):
+            items.append({
+                "feature": name,
+                "value": _safe_value(X.iloc[0][name]),
+                "shap_value": float(shap_vals[0][i]),
+            })
+        items.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
+        shap_top10 = items[:10]
+    except Exception:
+        logger.warning("SHAP 计算失败，返回空列表作为回退", exc_info=True)
+        shap_top10 = []
 
     return {
         "fraud_prob": round(fraud_prob, 4),
