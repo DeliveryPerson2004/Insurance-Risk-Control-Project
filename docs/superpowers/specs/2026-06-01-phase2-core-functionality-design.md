@@ -34,7 +34,8 @@ def predict(X: pd.DataFrame) -> dict:
 - `raw_prob` = `model_bundle['base_model'].predict_proba(X)[:, 1][0]`
 - `fraud_prob` = `model_bundle['calibrator'].predict([raw_prob])[0]`
 - `risk_level`: `high (≥0.7) / medium (0.36–0.7) / low (<0.36)`
-- `shap_values`: `shap.TreeExplainer(base_model).shap_values(X)` → 返回 Top 10 正影响特征列表 `[{feature, value, shap_value}]`，按 `abs(shap_value)` 降序
+- `shap_values`: 使用模块级 `explainer` 单例 `explainer.shap_values(X)` → 返回 Top 10 影响最大的特征列表 `[{feature, value, shap_value}]`，按 `abs(shap_value)` 降序
+  - `explainer = shap.TreeExplainer(model_bundle['base_model'])` 在模块加载时初始化一次，避免每次请求重复遍历决策树
 - 错误处理：模型文件不存在 → `AppException("模型未部署", 503)`
 
 ### `feature_transform.py`
@@ -86,14 +87,15 @@ def predict(X: pd.DataFrame) -> dict:
 }
 ```
 
-- 不包括 3 个成员聚合特征（后端自动计算）
+- 不包括 3 个成员聚合特征（后端动态计算）+ 5 个缺失标记（后端自动生成）
+- 可见字段: 27 个 = 7 类别 + 20 普通连续（23 连续 − 3 成员聚合）
 - 类别特征选项: 从训练数据 `data/train_eval_test/train.csv` 中提取实际唯一值
 - 字段配置集中定义在 `schemas/predict.py` 的 `FIELD_META` 字典中
 - 实现: 首次请求时构建并缓存（模块级变量），后续请求直接返回缓存
 
 ### `POST /api/predict/single`
 
-需认证。请求体（32 个可见字段 + `insuree_id`）：
+需认证。请求体（27 个可见字段 = 7 类别 + 20 连续 + `insuree_id`）：
 
 ```json
 {
@@ -144,11 +146,16 @@ def predict(X: pd.DataFrame) -> dict:
 4. feature_transform.transform_single() → (1, 35) DataFrame
 5. model_service.predict() → fraud_prob + raw_prob + shap_values
 6. 评级: 根据 threshold 映射 risk_level
-7. 写入 fraud_detect_result 表:
+7. FK 落库:
+   - model_id: 查询 model_info 表中 is_active=true 的记录
+   - policy_id + accident_claim_id: 单条预测只有特征值没有业务记录，
+     自动生成合成记录：policy_id = "PRED-{uuid前8位}"，写入 policy_info 骨架行；
+     accident_claim_id 自增，写入 accident_claim_info 骨架行（仅填充 insuree_id）
+8. 写入 fraud_detect_result 表:
    - feature_values (JSONB) → 35 特征值
    - shap_values (JSONB) → Top 10 shap 数据
-   - model_id → 当前活跃模型
-8. 返回 PredictSingleResponse
+   - policy_id, accident_claim_id, model_id → FK 关联
+9. 返回 PredictSingleResponse
 ```
 
 ### 文件清单
@@ -173,7 +180,7 @@ backend/app/
 ### PredictionForm 组件
 
 - **位置**: `frontend/src/components/predict/PredictionForm.tsx`
-- **职责**: 32 字段表单 + 模式切换 + 提交
+- **职责**: 27 字段表单 + 模式切换 + 提交
 - **实现**:
   - 首次加载调用 `GET /api/predict/field-options` 获取字段 meta
   - 默认模式: **Ant Design Collapse**（6 个分组面板），每组可展开/折叠
@@ -354,18 +361,25 @@ frontend/src/
 
 1. **表单混合模式**: 默认 Collapse 分组折叠面板，可一键切换到 Steps 向导
 2. **成员聚合特征**: 后端动态计算，表单不展示，新 insuree 填 0
-3. **RiskGauge 纯 CSS/SVG**: 不引入额外图表库（@ant-design/charts 仅用于趋势图）
-4. **SHAP 展示**: Top 10 列表 + 颜色编码，不额外调用 SHAP waterfall（数据已存入 JSONB 可审计）
-5. **仪表盘数据策略**: Phase 2 seed 脚本（~100 条）+ Phase 3 完整回填（76,911 条）
-6. **无 emoji 图标**: 所有 UI 组件不使用 emoji 作为装饰图标，统一用 @ant-design/icons
-7. **schemas 统一风格**: 所有响应遵循 `{code, data, message}` 格式，Pydantic v2 模型
+3. **缺失标记**: 后端自动生成，表单不展示（用户无法填写有意义的 0/1）
+4. **单条预测 FK 落库**: 自动生成合成 `policy_id`（`PRED-{uuid前8位}`）和 `accident_claim_info` 骨架记录
+5. **风险等级三级划分**（新增决策，fullstack-design.md 只定义了二分阈值 0.36）:
+   - `high` (≥ 0.7): 高欺诈风险
+   - `medium` (0.36 – 0.7): 中等风险
+   - `low` (< 0.36): 低风险
+6. **RiskGauge 纯 CSS/SVG**: 不引入额外图表库（@ant-design/charts 仅用于趋势图）
+7. **SHAP 展示**: Top 10 列表 + 颜色编码，不额外调用 SHAP waterfall（数据已存入 JSONB 可审计）
+8. **SHAP TreeExplainer 模块级单例**: 随模型一起初始化，避免每次请求重复遍历决策树
+9. **仪表盘数据策略**: Phase 2 seed 脚本（~100 条）+ Phase 3 完整回填（76,911 条）
+10. **无 emoji 图标**: 所有 UI 组件不使用 emoji 作为装饰图标，统一用 @ant-design/icons
+11. **schemas 统一风格**: 所有响应遵循 `{code, data, message}` 格式，Pydantic v2 模型
 
 ---
 
 ## Phase 2 整体文件变更清单
 
 ```
-新增 (14 个文件):
+新增 (18 个文件):
   backend/app/schemas/predict.py
   backend/app/schemas/dashboard.py
   backend/app/services/model_service.py
@@ -400,7 +414,7 @@ frontend/src/
 
 ## 验证方式
 
-1. `curl http://localhost:8000/api/predict/field-options` → 返回 32 个字段 meta + 6 个分组
+1. `curl http://localhost:8000/api/predict/field-options` → 返回 27 个字段 meta + 6 个分组
 2. `curl -X POST http://localhost:8000/api/predict/single` → 返回 fraud_prob + risk_level + shap_top10
 3. 浏览器访问 `/predict/single` → 表单填写 → 提交 → 结果区展示 RiskGauge + SHAP
 4. 浏览器访问 `/` → 仪表盘显示真实统计（seed 数据填充后）
