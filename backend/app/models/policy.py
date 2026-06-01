@@ -2,7 +2,7 @@
 
 from datetime import datetime, date
 
-from sqlalchemy import String, Float, Integer, Date, DateTime, ForeignKey, func
+from sqlalchemy import String, Float, Integer, Boolean, Date, DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database import Base
@@ -20,6 +20,10 @@ class Policy(Base):
     premium: Mapped[float | None] = mapped_column(Float)
     insure_date: Mapped[date | None] = mapped_column(Date)
     effect_date: Mapped[date | None] = mapped_column(Date)
+
+    is_synthetic: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

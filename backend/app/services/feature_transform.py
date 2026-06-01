@@ -94,7 +94,11 @@ async def compute_member_aggregates(
             func.count(func.distinct(Policy.policy_id)).label("unique_hospitals"),
         )
         .join(Policy, AccidentClaim.policy_id == Policy.policy_id)
-        .where(Policy.insuree_id == insuree_id)
+        .where(
+            Policy.insuree_id == insuree_id,
+            AccidentClaim.is_synthetic == False,
+            Policy.is_synthetic == False,
+        )
     )
     row = result.one_or_none()
     if row is None or row.claim_count == 0:

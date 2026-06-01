@@ -56,6 +56,7 @@ async def seed() -> None:
             policy = Policy(
                 policy_id=policy_id,
                 insuree_id=insuree_id,
+                is_synthetic=True,
             )
             db.add(policy)
             await db.flush()
@@ -64,6 +65,7 @@ async def seed() -> None:
             claim = AccidentClaim(
                 policy_id=policy_id,
                 claim_amount=round(random.uniform(100, 20_000), 2),
+                is_synthetic=True,
             )
             db.add(claim)
             await db.flush()

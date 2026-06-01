@@ -91,7 +91,7 @@ async def get_high_risk(db: AsyncSession, limit: int = 5) -> list[dict]:
             FraudDetectResult.detect_time,
         )
         .join(AccidentClaim, FraudDetectResult.accident_claim_id == AccidentClaim.id)
-        .where(FraudDetectResult.risk_level == "high")
+        .where(FraudDetectResult.risk_level == "high", AccidentClaim.is_synthetic == False)
         .order_by(FraudDetectResult.fraud_prob.desc())
         .limit(limit)
     )

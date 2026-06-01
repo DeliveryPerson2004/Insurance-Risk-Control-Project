@@ -27,6 +27,10 @@ class AccidentClaim(Base):
     # 仅回填脚本写入真实标签，运行时新案件为 NULL
     is_fraud: Mapped[bool | None] = mapped_column(Boolean)
 
+    is_synthetic: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false"
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

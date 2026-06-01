@@ -77,12 +77,14 @@ async def predict_single(
     policy = Policy(
         policy_id=synthetic_policy_id,
         insuree_id=req.insuree_id,
+        is_synthetic=True,
     )
     db.add(policy)
     await db.flush()  # 获取 policy_id 但等后续统一 commit
 
     claim = AccidentClaim(
         policy_id=synthetic_policy_id,
+        is_synthetic=True,
     )
     db.add(claim)
     await db.flush()
