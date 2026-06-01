@@ -45,6 +45,10 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
 
+    # 注册 auth 路由
+    from backend.app.routers.auth import router as auth_router
+    app.include_router(auth_router)
+
     @app.get("/api/health")
     async def health():
         return {"code": 0, "data": {"status": "ok"}, "message": "ok"}
