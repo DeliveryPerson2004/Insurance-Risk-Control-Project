@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import threading
 from typing import Any
 
 import numpy as np
@@ -30,6 +31,7 @@ SCALER_PARAMS: dict[str, dict] = {}
 
 # 用户可见字段 = 7 类别 + (23 连续 - 3 MBR_*) = 27
 MBR_AGG_FEATURES = {"MBR_CLAIM_COUNT", "MBR_AVG_SUB_AMT", "MBR_UNIQUE_HOSPITALS"}
+_lock = threading.Lock()
 
 
 def _load_params():
@@ -41,36 +43,40 @@ def _load_params():
     if _params is not None:
         return
 
-    if not os.path.exists(_PARAMS_PATH):
-        raise AppException(
-            f"预处理参数文件不存在: {_PARAMS_PATH}", status_code=503
+    with _lock:
+        if _params is not None:  # double-check
+            return
+
+        if not os.path.exists(_PARAMS_PATH):
+            raise AppException(
+                f"预处理参数文件不存在: {_PARAMS_PATH}", status_code=503
+            )
+
+        try:
+            with open(_PARAMS_PATH, "r", encoding="utf-8") as f:
+                _params = json.load(f)
+        except json.JSONDecodeError as e:
+            raise AppException(
+                f"预处理参数文件格式错误: {e}", status_code=503
+            )
+
+        CAT_COLS = _params["cat_cols"]
+        CONT_COLS = _params["cont_cols"]
+        FEATURE_COLS = _params["feature_cols"]
+        MISSING_COLS = _params["missing_cols"]
+        FILL_VALUES = _params["fill_values"]
+        WINSOR_BOUNDS = _params["winsor_bounds"]
+        LOG_PARAMS = _params["log_params"]
+        SKIP_WINSOR = _params["skip_winsor"]
+        SCALER_PARAMS = _params["scaler_params"]
+
+        logger.info(
+            "预处理参数已加载: %d 特征, %d 类别, %d 连续",
+            len(FEATURE_COLS), len(CAT_COLS), len(CONT_COLS),
         )
-
-    try:
-        with open(_PARAMS_PATH, "r", encoding="utf-8") as f:
-            _params = json.load(f)
-    except json.JSONDecodeError as e:
-        raise AppException(
-            f"预处理参数文件格式错误: {e}", status_code=503
+        logger.warning(
+            "PROV_CODE 字段在数据库中不存在，unique_hospitals 使用 policy_id 作为代理"
         )
-
-    CAT_COLS = _params["cat_cols"]
-    CONT_COLS = _params["cont_cols"]
-    FEATURE_COLS = _params["feature_cols"]
-    MISSING_COLS = _params["missing_cols"]
-    FILL_VALUES = _params["fill_values"]
-    WINSOR_BOUNDS = _params["winsor_bounds"]
-    LOG_PARAMS = _params["log_params"]
-    SKIP_WINSOR = _params["skip_winsor"]
-    SCALER_PARAMS = _params["scaler_params"]
-
-    logger.info(
-        "预处理参数已加载: %d 特征, %d 类别, %d 连续",
-        len(FEATURE_COLS), len(CAT_COLS), len(CONT_COLS),
-    )
-    logger.warning(
-        "PROV_CODE 字段在数据库中不存在，unique_hospitals 使用 policy_id 作为代理"
-    )
 
 
 async def compute_member_aggregates(

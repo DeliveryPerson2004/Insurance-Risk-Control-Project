@@ -1,8 +1,6 @@
 """单条预测编排 — 校验 → 变换 → 推理 → 持久化."""
 
-import json
 import logging
-import os
 import uuid
 from datetime import datetime, timezone
 
@@ -144,12 +142,9 @@ def _build_field_options() -> dict:
     # 确保惰性参数已加载（CONT_COLS 在 visible_cont_cols 计算中需要）
     feature_transform._load_params()
 
-    # 从烘焙的预处理参数中读取类别特征的可选值（Docker 无需 data/ 目录）
-    _params_path = os.path.join(os.path.dirname(__file__), "preprocess_params.json")
-    with open(_params_path, "r", encoding="utf-8") as f:
-        _baked_params = json.load(f)
-    cat_options: dict[str, list[str]] = _baked_params.get("cat_options", {})
-    cat_cols = _baked_params["cat_cols"]
+    # 从已加载的预处理参数中读取类别特征可选值（无需重复读取 JSON）
+    cat_options: dict[str, list[str]] = feature_transform._params.get("cat_options", {})
+    cat_cols = feature_transform._params["cat_cols"]
 
     groups_order = ["诊断信息", "金额信息", "保单信息", "时间特征", "被保险人画像", "医院信息"]
 

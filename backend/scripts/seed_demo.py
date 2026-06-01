@@ -87,7 +87,7 @@ async def seed() -> None:
                 accident_claim_id=claim.id,
                 model_id=model.model_id,
                 fraud_prob=fraud_prob,
-                raw_prob=round(fraud_prob - random.uniform(-0.05, 0.05), 4),
+                raw_prob=round(max(0.0, min(1.0, fraud_prob + random.uniform(-0.05, 0.05))), 4),
                 risk_level=risk_level,
                 threshold_used=0.36,
                 feature_values={},

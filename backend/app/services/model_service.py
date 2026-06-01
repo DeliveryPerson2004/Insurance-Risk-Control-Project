@@ -2,6 +2,7 @@
 
 import os
 import logging
+import threading
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ MODEL_PATH = settings.MODEL_PATH
 # ---- 模块级单例 ----
 _model_bundle: dict | None = None
 _explainer: shap.TreeExplainer | None = None
+_lock = threading.Lock()
 
 
 def _load_model():
@@ -26,17 +28,21 @@ def _load_model():
     if _model_bundle is not None:
         return
 
-    if not os.path.exists(MODEL_PATH):
-        raise AppException(f"模型未部署: {MODEL_PATH} 不存在", status_code=503)
+    with _lock:
+        if _model_bundle is not None:  # double-check
+            return
 
-    logger.info("Loading model from %s ...", MODEL_PATH)
-    _model_bundle = joblib.load(MODEL_PATH)
-    _explainer = shap.TreeExplainer(_model_bundle["base_model"])
-    logger.info(
-        "Model loaded: %d features, threshold=%.2f",
-        len(_model_bundle["feature_cols"]),
-        _model_bundle["threshold"],
-    )
+        if not os.path.exists(MODEL_PATH):
+            raise AppException(f"模型未部署: {MODEL_PATH} 不存在", status_code=503)
+
+        logger.info("Loading model from %s ...", MODEL_PATH)
+        _model_bundle = joblib.load(MODEL_PATH)
+        _explainer = shap.TreeExplainer(_model_bundle["base_model"])
+        logger.info(
+            "Model loaded: %d features, threshold=%.2f",
+            len(_model_bundle["feature_cols"]),
+            _model_bundle["threshold"],
+        )
 
 
 def get_threshold() -> float:

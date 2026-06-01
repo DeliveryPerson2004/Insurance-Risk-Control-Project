@@ -58,15 +58,16 @@ async def get_trend(db: AsyncSession, days: int = 30) -> list[dict]:
     """每日检测量 + 欺诈率."""
     since = date.today() - timedelta(days=days)
 
+    d_col = func.date(FraudDetectResult.detect_time).label("d")
     result = await db.execute(
         select(
-            func.date(FraudDetectResult.detect_time).label("d"),
+            d_col,
             func.count(FraudDetectResult.id).label("total"),
             func.count().filter(FraudDetectResult.risk_level == "high").label("high_cnt"),
         )
         .where(FraudDetectResult.detect_time >= since)
-        .group_by("d")
-        .order_by("d")
+        .group_by(d_col)
+        .order_by(d_col)
     )
     rows = result.all()
     trend = []
