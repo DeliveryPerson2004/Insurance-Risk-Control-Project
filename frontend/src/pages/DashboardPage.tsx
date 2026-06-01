@@ -1,41 +1,22 @@
-import { Card, Col, Row, Statistic } from 'antd';
-import { SafetyOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { useAuth } from '../hooks/useAuth';
+import { Card, Col, Row } from 'antd';
+import StatsCards from '../components/dashboard/StatsCards';
+import RiskTrendChart from '../components/dashboard/RiskTrendChart';
+import HighRiskTable from '../components/dashboard/HighRiskTable';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-
   return (
     <div>
-      <h2>欢迎，{user?.display_name || user?.username}</h2>
+      <h2>仪表盘</h2>
+      <StatsCards />
       <Row gutter={16} style={{ marginTop: 24 }}>
-        <Col span={8}>
+        <Col span={15}>
           <Card>
-            <Statistic
-              title="今日待审核"
-              value={0}
-              prefix={<ClockCircleOutlined />}
-            />
+            <RiskTrendChart />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={9}>
           <Card>
-            <Statistic
-              title="今日风险案件"
-              value={0}
-              prefix={<SafetyOutlined />}
-              valueStyle={{ color: '#cf1322' }}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="今日已处理"
-              value={0}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#3f8600' }}
-            />
+            <HighRiskTable />
           </Card>
         </Col>
       </Row>

@@ -113,3 +113,26 @@ export interface PredictSingleResponse {
   shap_top10: ShapItem[];
   detect_time: string;
 }
+
+// ---- 仪表盘 ----
+export interface DashboardStats {
+  today_pending: number;
+  today_high_risk: number;
+  today_processed: number;
+  total_detected: number;
+}
+
+export interface TrendItem {
+  date: string;
+  total: number;
+  fraud_rate: number;
+}
+
+export interface HighRiskItem {
+  id: number;
+  policy_id: string;
+  fraud_prob: number;
+  risk_level: string;
+  claim_amount: number | null;
+  detect_time: string;
+}
