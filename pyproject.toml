@@ -3,10 +3,8 @@ name = "insurance-fraud-detection"
 version = "0.4.0"
 description = "医疗保险理赔欺诈检测系统"
 requires-python = ">=3.10"
+# 所有依赖由 [dependency-groups] 管理，uv sync --group ml --group web
 dependencies = []
-
-[tool.uv]
-# 脚本项目，不需要构建为 Python 包
 
 [dependency-groups]
 ml = [
