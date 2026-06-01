@@ -1,6 +1,7 @@
 """单条/批次输入 → 35 特征 DataFrame（与训练时变换一致）."""
 
 import json
+import logging
 import os
 from typing import Any
 
@@ -9,23 +10,67 @@ import pandas as pd
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.utils.exceptions import AppException
+
+logger = logging.getLogger(__name__)
+
 _PARAMS_PATH = os.path.join(os.path.dirname(__file__), "preprocess_params.json")
 
-with open(_PARAMS_PATH, "r", encoding="utf-8") as f:
-    _params = json.load(f)
-
-CAT_COLS: list[str] = _params["cat_cols"]
-CONT_COLS: list[str] = _params["cont_cols"]  # 23 个（含 3 个 MBR_*）
-FEATURE_COLS: list[str] = _params["feature_cols"]  # 35 个最终列
-MISSING_COLS: list[str] = _params["missing_cols"]  # 5 个 *_MISSING
-FILL_VALUES: dict[str, float] = _params["fill_values"]
-WINSOR_BOUNDS: dict[str, list[float]] = _params["winsor_bounds"]
-LOG_PARAMS: dict[str, dict] = _params["log_params"]
-SKIP_WINSOR: list[str] = _params["skip_winsor"]
-SCALER_PARAMS: dict[str, dict] = _params["scaler_params"]
+# ---- 模块级惰性加载（仿 model_service.py 的 _load_model 模式） ----
+_params: dict | None = None
+CAT_COLS: list[str] = []
+CONT_COLS: list[str] = []
+FEATURE_COLS: list[str] = []
+MISSING_COLS: list[str] = []
+FILL_VALUES: dict[str, float] = {}
+WINSOR_BOUNDS: dict[str, list[float]] = {}
+LOG_PARAMS: dict[str, dict] = {}
+SKIP_WINSOR: list[str] = []
+SCALER_PARAMS: dict[str, dict] = {}
 
 # 用户可见字段 = 7 类别 + (23 连续 - 3 MBR_*) = 27
 MBR_AGG_FEATURES = {"MBR_CLAIM_COUNT", "MBR_AVG_SUB_AMT", "MBR_UNIQUE_HOSPITALS"}
+
+
+def _load_params():
+    """惰性加载预处理参数（首次调用时触发，后续复用单例）."""
+    global _params, CAT_COLS, CONT_COLS, FEATURE_COLS
+    global MISSING_COLS, FILL_VALUES, WINSOR_BOUNDS
+    global LOG_PARAMS, SKIP_WINSOR, SCALER_PARAMS
+
+    if _params is not None:
+        return
+
+    if not os.path.exists(_PARAMS_PATH):
+        raise AppException(
+            f"预处理参数文件不存在: {_PARAMS_PATH}", status_code=503
+        )
+
+    try:
+        with open(_PARAMS_PATH, "r", encoding="utf-8") as f:
+            _params = json.load(f)
+    except json.JSONDecodeError as e:
+        raise AppException(
+            f"预处理参数文件格式错误: {e}", status_code=503
+        )
+
+    CAT_COLS = _params["cat_cols"]
+    CONT_COLS = _params["cont_cols"]
+    FEATURE_COLS = _params["feature_cols"]
+    MISSING_COLS = _params["missing_cols"]
+    FILL_VALUES = _params["fill_values"]
+    WINSOR_BOUNDS = _params["winsor_bounds"]
+    LOG_PARAMS = _params["log_params"]
+    SKIP_WINSOR = _params["skip_winsor"]
+    SCALER_PARAMS = _params["scaler_params"]
+
+    logger.info(
+        "预处理参数已加载: %d 特征, %d 类别, %d 连续",
+        len(FEATURE_COLS), len(CAT_COLS), len(CONT_COLS),
+    )
+    logger.warning(
+        "PROV_CODE 字段在数据库中不存在，unique_hospitals 使用 policy_id 作为代理"
+    )
 
 
 async def compute_member_aggregates(
@@ -67,6 +112,16 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
 
     feature_dict 必须包含全部 35 个字段: 27 用户输入 + 3 MBR_* + 5 *_MISSING.
     """
+    _load_params()
+
+    # 验证输入列完整性（惰性加载后 FEATURE_COLS 已知）
+    missing = [c for c in FEATURE_COLS if c not in feature_dict]
+    if missing:
+        raise AppException(
+            f"输入缺少 {len(missing)} 个必需字段: {missing}",
+            status_code=400,
+        )
+
     df = pd.DataFrame([feature_dict])
 
     # 0) 缺失标记 — 必须在任何 fill 之前生成，否则 isnull() 恒为假
@@ -83,7 +138,14 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
     # 2) 连续特征填充缺失
     for col in CONT_COLS:
         if col in df.columns:
+            before_na = df[col].isna().sum()
             df[col] = pd.to_numeric(df[col], errors="coerce")
+            coerced = df[col].isna().sum() - before_na
+            if coerced > 0:
+                logger.warning(
+                    "列 '%s' 中有 %d 个值被 pd.to_numeric 强制转换为 NaN",
+                    col, coerced,
+                )
             med = FILL_VALUES.get(col, 0)
             df[col] = df[col].fillna(med)
 
@@ -109,6 +171,5 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
             if std > 0:
                 df[col] = (df[col] - mean) / std
 
-    # 6) 确保 final 列序
-    existing = [c for c in FEATURE_COLS if c in df.columns]
-    return df[existing]
+    # 6) 确保 final 列序（输入已验证完整，直接按 FEATURE_COLS 排列）
+    return df[FEATURE_COLS]
