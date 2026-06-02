@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Form, Select, InputNumber, Input, Button, Collapse, Steps, Space, message, Spin,
+  Form, Select, InputNumber, Input, Button, Collapse, Steps, message, Spin,
 } from 'antd';
 import type { FieldOption } from '../../types';
 import { getFieldOptions } from '../../api/predict';
