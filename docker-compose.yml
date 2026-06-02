@@ -36,10 +36,13 @@ services:
       JWT_ALGORITHM: HS256
       CORS_ORIGINS: '["http://localhost:5173"]'
       MODEL_PATH: /app/modeling/xgb_fraud_model.pkl
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
     ports:
       - "8000:8000"
     volumes:
       - ./modeling:/app/modeling:ro
+      - batch_results:/tmp/batch_results
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,6 +67,7 @@ services:
         condition: service_healthy
     volumes:
       - ./modeling:/app/modeling:ro
+      - batch_results:/tmp/batch_results
 
   nginx:
     image: nginx:alpine
@@ -77,3 +81,4 @@ services:
 
 volumes:
   pgdata:
+  batch_results:

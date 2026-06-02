@@ -20,6 +20,10 @@ data/raw/*
 # ===== 模型文件（大文件，不入库） =====
 modeling/xgb_fraud_model.pkl
 
+# ===== 环境变量（含密钥，不入库） =====
+.env
+.env.local
+
 # ===== 虚拟环境 =====
 venv/
 .venv/
