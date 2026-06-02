@@ -175,10 +175,10 @@ async def backfill():
                     )
                     db.add(case)
 
-                count += 1
             except Exception as e:
                 logger.error("Row %d failed: %s", count, str(e))
-                continue
+
+            count += 1
 
             if count % 100 == 0:
                 await db.commit()

@@ -206,8 +206,8 @@ export interface CaseDetailClaim {
   accident_type: string | null;
   claim_amount: number | null;
   claim_date: string | null;
-  is_fraud: number | null;
-  is_paid: number | null;
+  is_fraud: boolean | null;
+  is_paid: boolean | null;
 }
 
 export interface CaseHistoryItem {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Card, Table, Tag, Typography } from 'antd';
+import { Card, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import BatchUpload from '../components/batch/BatchUpload';
 import BatchProgress from '../components/batch/BatchProgress';
@@ -100,6 +100,8 @@ export default function BatchPredictPage() {
           a.download = `batch_result_${currentTask.task_id}.csv`;
           a.click();
           URL.revokeObjectURL(url);
+        } else {
+          message.error('下载失败，文件可能已被清理或不存在');
         }
       } catch {
         // ignore

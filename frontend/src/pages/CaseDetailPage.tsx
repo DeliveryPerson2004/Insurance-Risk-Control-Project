@@ -39,7 +39,7 @@ export default function CaseDetailPage() {
     report_text: string;
     model_used: string;
     generated_at: string;
-  } | null>(detail?.agent_report || null);
+  } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const loadDetail = useCallback(async () => {
@@ -65,7 +65,7 @@ export default function CaseDetailPage() {
     }
   }, [detail]);
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = useCallback(async () => {
     if (!id) return;
     setAnalyzing(true);
     try {
@@ -86,7 +86,7 @@ export default function CaseDetailPage() {
     } finally {
       setAnalyzing(false);
     }
-  };
+  }, [id, agentReport]);
 
   const handleAdjudicate = useCallback(
     async (values: { manual_result: 'pass' | 'reject' | 'investigate'; remark?: string }) => {

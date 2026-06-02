@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PredictionPage from './pages/PredictionPage';
 import BatchPredictPage from './pages/BatchPredictPage';
+import CaseListPage from './pages/CaseListPage';
+import CaseDetailPage from './pages/CaseDetailPage';
 import AppLayout from './components/layout/AppLayout';
 
 const queryClient = new QueryClient();
@@ -60,7 +62,8 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="predict/single" element={<PredictionPage />} />
                 <Route path="predict/batch" element={<BatchPredictPage />} />
-                <Route path="cases" element={<div>案件管理（Phase 3）</div>} />
+                <Route path="cases" element={<CaseListPage />} />
+                <Route path="cases/:id" element={<CaseDetailPage />} />
                 <Route path="admin" element={<div>管理面板（Phase 4）</div>} />
               </Route>
               <Route path="*" element={<div style={{ padding: 48, textAlign: 'center' }}>404</div>} />
