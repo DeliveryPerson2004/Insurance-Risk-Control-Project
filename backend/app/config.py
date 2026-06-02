@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # 模型
     MODEL_PATH: str = "modeling/xgb_fraud_model.pkl"
 
+    # Batch
+    BATCH_RESULT_DIR: str = "/tmp/batch_results"
+
     # Agent (DeepSeek)
     DEEPSEEK_API_KEY: str = ""
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"

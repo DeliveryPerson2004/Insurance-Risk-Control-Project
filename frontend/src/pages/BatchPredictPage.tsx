@@ -65,6 +65,16 @@ export default function BatchPredictPage() {
       setLoading(true);
       try {
         const { task_id } = await uploadBatch(file);
+        setCurrentTask({
+          task_id,
+          status: 'pending',
+          total: 0,
+          processed: 0,
+          success: 0,
+          failed: 0,
+          result_filename: null,
+          error_message: null,
+        });
         startPolling(task_id);
       } catch {
         // error handled by interceptor
@@ -75,9 +85,25 @@ export default function BatchPredictPage() {
     [startPolling],
   );
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (currentTask) {
-      window.open(getBatchDownloadUrl(currentTask.task_id));
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(getBatchDownloadUrl(currentTask.task_id), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `batch_result_${currentTask.task_id}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } catch {
+        // ignore
+      }
     }
   }, [currentTask]);
 

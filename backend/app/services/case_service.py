@@ -29,6 +29,11 @@ async def list_cases(
     keyword: str | None = None,
 ) -> dict:
     """分页列表，支持多维筛选."""
+    if date_from:
+        date_from = datetime.fromisoformat(date_from)
+    if date_to:
+        date_to = datetime.fromisoformat(date_to)
+
     stmt = select(
         FraudDetectResult.id,
         FraudDetectResult.policy_id,
@@ -56,6 +61,7 @@ async def list_cases(
     if date_to:
         conditions.append(FraudDetectResult.detect_time <= date_to)
     if keyword:
+        keyword = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         conditions.append(FraudDetectResult.policy_id.ilike(f"%{keyword}%"))
 
     if conditions:
@@ -68,7 +74,7 @@ async def list_cases(
 
     # Paginate with ordering: high risk first, then by detect_time desc
     stmt = stmt.order_by(
-        FraudDetectResult.risk_level == "high",
+        desc(FraudDetectResult.risk_level == "high"),
         desc(FraudDetectResult.detect_time),
     ).offset((page - 1) * size).limit(size)
 

@@ -9,20 +9,21 @@ import pandas as pd
 from sqlalchemy import select
 
 from backend.app.tasks.celery_app import celery_app
+from backend.app.config import settings
 
 logger = logging.getLogger(__name__)
 
-RESULT_DIR = "/tmp/batch_results"
+RESULT_DIR = settings.BATCH_RESULT_DIR
 os.makedirs(RESULT_DIR, exist_ok=True)
 
 
 def _update_progress(task_id: str, **kwargs):
     """Update task progress in Redis."""
-    from backend.app.services.batch_service import _redis_get, _redis_set
+    from backend.app.utils.redis_utils import redis_get, redis_set
     key = f"batch_task:{task_id}"
-    current = _redis_get(key) or {}
+    current = redis_get(key) or {}
     current.update(kwargs)
-    _redis_set(key, current)
+    redis_set(key, current)
 
 
 @celery_app.task(bind=True, max_retries=0)

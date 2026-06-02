@@ -31,6 +31,11 @@ async def upload_batch(
         )
 
     content = await file.read()
+    if len(content) > 50 * 1024 * 1024:  # 50MB
+        return JSONResponse(
+            status_code=400,
+            content={"code": 400, "data": None, "message": "文件大小不能超过 50MB"},
+        )
     if len(content) == 0:
         return JSONResponse(
             status_code=400,
@@ -61,7 +66,7 @@ async def batch_status(
     current_user: User = Depends(get_current_user),
 ):
     """查询批量任务进度."""
-    result = await batch_service.get_batch_status(task_id)
+    result = await batch_service.get_batch_status(task_id, current_user.user_id)
     return ok(result)
 
 
@@ -72,7 +77,7 @@ async def batch_download(
 ):
     """下载批量预测结果 CSV."""
     import os as _os
-    path = batch_service.get_result_path(task_id)
+    path = batch_service.get_result_path(task_id, current_user.user_id)
     if path is None or not _os.path.exists(path):
         return JSONResponse(
             status_code=404,

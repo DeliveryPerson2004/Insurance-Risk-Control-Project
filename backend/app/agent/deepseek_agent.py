@@ -23,6 +23,8 @@ class DeepSeekAgent(BaseAgent):
         timeout: float = 30.0,
     ):
         self._api_key = api_key or getattr(settings, "DEEPSEEK_API_KEY", "")
+        if not self._api_key:
+            logger.warning("DEEPSEEK_API_KEY not configured, agent will be unavailable")
         self._base_url = base_url or getattr(settings, "DEEPSEEK_BASE_URL", "https://api.deepseek.com")
         self._model = model
         self._timeout = timeout
@@ -88,7 +90,10 @@ class DeepSeekAgent(BaseAgent):
             raise
 
     async def health_check(self) -> bool:
-        """通过轻量 API 调用检查服务可用性."""
+        """通过轻量 API 调用检查服务可用性.
+
+        Uses max_tokens=1 to minimize token consumption (~1 token per check).
+        """
         try:
             client = await self._get_client()
             response = await client.post(

@@ -64,5 +64,4 @@ async def adjudicate(
     result = await case_service.adjudicate_case(
         db, case_id, req.manual_result, req.remark, current_user.user_id,
     )
-    await db.commit()
     return ok(result)

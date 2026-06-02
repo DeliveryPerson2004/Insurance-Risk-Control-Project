@@ -14,6 +14,13 @@ from backend.app.config import settings
 async def lifespan(app: FastAPI):
     """启动/关闭生命周期管理."""
     yield
+    # Cleanup agent HTTP client
+    try:
+        from backend.app.agent.deepseek_agent import get_agent
+        agent = get_agent()
+        await agent.close()
+    except Exception:
+        pass
 
 
 def create_app() -> FastAPI:

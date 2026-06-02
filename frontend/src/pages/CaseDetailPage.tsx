@@ -69,7 +69,8 @@ export default function CaseDetailPage() {
     if (!id) return;
     setAnalyzing(true);
     try {
-      const res = await analyzeCase(Number(id));
+      const isRefresh = !!agentReport;
+      const res = await analyzeCase(Number(id), isRefresh);
       if (res.fallback) {
         message.warning('AI 分析暂时不可用，请稍后重试');
       } else if (res.report) {

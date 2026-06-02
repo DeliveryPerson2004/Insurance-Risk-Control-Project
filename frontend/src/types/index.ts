@@ -152,7 +152,7 @@ export interface BatchTaskStatus {
 export interface BatchTaskItem {
   task_id: string;
   filename: string;
-  status: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   total: number | null;
   processed: number | null;
   created_at: string;
@@ -164,4 +164,85 @@ export interface BatchTaskListResponse {
   total: number;
   page: number;
   size: number;
+}
+
+// ---- 案件管理 ----
+export interface CaseListItem {
+  id: number;
+  policy_id: string;
+  fraud_prob: number;
+  raw_prob: number | null;
+  risk_level: string;
+  claim_amount: number | null;
+  manual_result: string | null;
+  detect_time: string;
+  has_agent_report: boolean;
+}
+
+export interface CaseListResponse {
+  items: CaseListItem[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface CaseDetailInsuree {
+  insuree_id: string;
+  age: number | null;
+  gender: string | null;
+  occupation: string | null;
+}
+
+export interface CaseDetailPolicy {
+  policy_id: string;
+  insurance_type: string | null;
+  insurance_amount: number | null;
+  premium: number | null;
+}
+
+export interface CaseDetailClaim {
+  id: number;
+  accident_date: string | null;
+  accident_type: string | null;
+  claim_amount: number | null;
+  claim_date: string | null;
+  is_fraud: number | null;
+  is_paid: number | null;
+}
+
+export interface CaseHistoryItem {
+  id: number;
+  manual_result: string | null;
+  remark: string | null;
+  operate_time: string;
+  reviewer_name: string | null;
+}
+
+export interface CaseDetailResponse {
+  id: number;
+  policy_id: string;
+  fraud_prob: number;
+  raw_prob: number | null;
+  risk_level: string;
+  threshold_used: number | null;
+  feature_values: Record<string, unknown> | null;
+  shap_values: Record<string, number> | null;
+  agent_report: { report_text: string; model_used: string; generated_at: string } | null;
+  manual_result: string | null;
+  detect_time: string;
+  insuree: CaseDetailInsuree | null;
+  policy: CaseDetailPolicy | null;
+  accident_claim: CaseDetailClaim | null;
+  case_history: CaseHistoryItem[];
+}
+
+export interface AdjudicateRequest {
+  manual_result: 'pass' | 'reject' | 'investigate';
+  remark?: string;
+}
+
+export interface CaseStatsSummary {
+  total: number;
+  by_risk_level: Record<string, number>;
+  by_manual_result: Record<string, number>;
 }

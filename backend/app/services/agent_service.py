@@ -79,6 +79,8 @@ async def analyze_case(
         }
 
     except Exception as e:
+        # No rollback needed — no dirty data was written when agent call fails.
+        # The case record was read-only (no updates persisted before agent call).
         logger.exception("Agent failed for case %d", case_id)
         return {
             "report": None,
