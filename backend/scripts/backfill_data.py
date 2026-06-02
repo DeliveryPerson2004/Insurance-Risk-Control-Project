@@ -20,7 +20,7 @@ from backend.app.models.fraud_detect_result import FraudDetectResult
 from backend.app.models.model_info import ModelInfo
 from backend.app.models.case_history import CaseHistory
 from backend.app.models.user import User
-from backend.app.services import model_service
+from backend.app.services import model_service, feature_transform
 
 
 CSV_DIR = "data/train_eval_test"
@@ -116,8 +116,8 @@ async def backfill():
 
             # 7. Predict: CSV is already standardized → direct inference
             feature_dict = {}
-            cat_cols = ["ICD10_CHAPTER", "BH_PREFIX", "BH_CATEGORY", "MBR_TYPE",
-                         "BEN_TYPE", "KIND_CODE", "POCY_PLAN_DESC"]
+            feature_transform._load_params()
+            cat_cols = feature_transform.CAT_COLS
             for col in feature_cols:
                 if col in row.index:
                     val = row[col]
