@@ -136,3 +136,32 @@ export interface HighRiskItem {
   claim_amount: number | null;
   detect_time: string;
 }
+
+// ---- 批量预测 ----
+export interface BatchTaskStatus {
+  task_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  total: number;
+  processed: number;
+  success: number;
+  failed: number;
+  result_filename: string | null;
+  error_message: string | null;
+}
+
+export interface BatchTaskItem {
+  task_id: string;
+  filename: string;
+  status: string;
+  total: number | null;
+  processed: number | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface BatchTaskListResponse {
+  items: BatchTaskItem[];
+  total: number;
+  page: number;
+  size: number;
+}
