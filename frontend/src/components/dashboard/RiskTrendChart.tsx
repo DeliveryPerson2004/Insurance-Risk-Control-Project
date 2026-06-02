@@ -34,14 +34,17 @@ export default function RiskTrendChart() {
       {
         type: 'interval',
         encode: { x: 'date', y: 'total' },
-        axis: { y: { title: '检测量' } },
-        style: { fill: '#1677ff', maxWidth: 20 },
+        scale: { y: { independent: true } },
+        axis: { y: { position: 'left', title: '检测量' } },
+        style: { fill: '#1677ff' },
       },
       {
         type: 'line',
         encode: { x: 'date', y: 'fraud_rate' },
+        scale: { y: { independent: true, domain: [0, 1] } },
         axis: {
           y: {
+            position: 'right',
             title: '欺诈率',
             labelFormatter: (v: number) => `${(v * 100).toFixed(0)}%`,
           },
