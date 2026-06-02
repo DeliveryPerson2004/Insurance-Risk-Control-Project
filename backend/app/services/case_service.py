@@ -91,7 +91,7 @@ async def list_cases(
             "risk_level": row.risk_level,
             "claim_amount": row.claim_amount,
             "manual_result": row.manual_result,
-            "detect_time": row.detect_time,
+            "detect_time": row.detect_time.isoformat() if row.detect_time else None,
             "has_agent_report": row.agent_report is not None,
         })
 
@@ -141,7 +141,7 @@ def _build_detail(record, history_rows) -> dict:
         "shap_values": record.shap_values,
         "agent_report": record.agent_report,
         "manual_result": record.manual_result,
-        "detect_time": record.detect_time,
+        "detect_time": record.detect_time.isoformat() if record.detect_time else None,
         "insuree": {
             "insuree_id": insuree.insuree_id,
             "age": insuree.age,
@@ -168,7 +168,7 @@ def _build_detail(record, history_rows) -> dict:
                 "id": ch.id,
                 "manual_result": ch.manual_result,
                 "remark": ch.remark,
-                "operate_time": ch.operate_time,
+                "operate_time": ch.operate_time.isoformat() if ch.operate_time else None,
                 "reviewer_name": reviewer_name,
             }
             for ch, reviewer_name in history_rows
