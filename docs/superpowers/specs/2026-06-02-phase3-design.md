@@ -23,11 +23,13 @@
 
 CSV 每行 → 1 insuree + 1 policy + 1 claim + 1 fraud_detect_result（1:1:1:1）
 
+> **已知局限**: 简化后每个 insuree 只有 1 个 policy 和 1 个 claim，成员聚合特征（MBR_CLAIM_COUNT 恒为 1，MBR_AVG_SUB_AMT = SUB_AMT）缺乏多样性，可能影响演示数据的真实感。全量回填时可考虑按设计文档原文实现多保单分组。
+
 | 实体 | ID 生成 | 关键字段 |
 |------|--------|---------|
 | `insuree_info` | `uuid.uuid4().hex` | age, gender（从 CSV 特征提取） |
-| `policy_info` | `uuid.uuid4().hex` | FK→insuree，`is_synthetic=True` |
-| `accident_claim_info` | auto | FK→policy，`is_fraud`=CSV FRAUD 列，`is_synthetic=True` |
+| `policy_info` | `uuid.uuid4().hex` | FK→insuree，`is_synthetic=False`（默认值） |
+| `accident_claim_info` | auto | FK→policy，`is_fraud`=CSV FRAUD 列，`is_synthetic=False`（默认值） |
 | `fraud_detect_result` | auto | FK→policy + claim + model，完整特征值和预测结果 |
 
 ### 模型推理
@@ -46,7 +48,7 @@ CSV 中数据**已经是标准化后的 35 特征**（z-score 值），无需走
 | 时间戳 | 过去 180 天均匀随机分布 |
 | 审核记录 | 随机 20% 案件预生成 case_history（pass 60% / reject 20% / investigate 20%） |
 | model_info | 硬编码插入一条记录（AUC 0.9934, threshold 0.36, 35 特征） |
-| is_synthetic | policy_info 和 accident_claim_info 标记 True；fraud_detect_result 不设此标记（dashboard 需统计） |
+| is_synthetic | policy_info 和 accident_claim_info 使用默认值 False（回填数据应作为"真实"演示数据参与 dashboard 统计和成员聚合计算）；fraud_detect_result 无此字段不受影响 |
 
 ### 执行方式
 
@@ -62,7 +64,8 @@ docker compose exec backend uv run python backend/scripts/backfill_data.py
 
 **新增文件**:
 - `backend/app/services/batch_service.py` — 业务逻辑层
-- `backend/app/routers/batch.py` — 路由（挂载到 predict router 下）
+- `backend/app/routers/batch.py` — 路由（挂载到 predict router 前缀 `/api/predict` 下）
+- `backend/app/schemas/batch.py` — 请求/响应模型
 - 完善 `backend/app/tasks/batch_tasks.py` — Celery 异步任务
 
 **API 端点**:
@@ -124,7 +127,7 @@ docker compose exec backend uv run python backend/scripts/backfill_data.py
 |------|------|------|
 | `GET` | `/api/cases` | 分页列表（`?page&size&risk_level&manual_result&date_from&date_to&keyword`） |
 | `GET` | `/api/cases/{id}` | 案件详情（关联 policy + insuree + claim + result + case_history 列表） |
-| `PUT` | `/api/cases/{id}/adjudicate` | 人工判定（`manual_result` + `remark`），写入 case_history |
+| `PUT` | `/api/cases/{id}/adjudicate` | 人工判定（`{ "manual_result": "pass"\|"reject"\|"investigate", "remark": "..." }`），写入 case_history |
 | `GET` | `/api/cases/stats/summary` | 聚合统计（各风险等级数量、各判定结果数量） |
 
 **列表排序**: 按 detect_time 倒序，高风险优先。
@@ -220,9 +223,11 @@ DeepSeekAgent(BaseAgent)
 
 ### 前端
 
+**新增文件**:
+- `frontend/src/api/agent.ts` — Agent API 调用模块
+
 **修改文件**:
 - `frontend/src/pages/CaseDetailPage.tsx` — 添加"AI 分析"区域
-- `frontend/src/api/agent.ts` — 新增
 
 **交互**:
 - 案件详情页显示"AI 分析"区域
@@ -241,7 +246,7 @@ DeepSeekAgent(BaseAgent)
 
 ## 新增文件清单
 
-### 后端（13 文件）
+### 后端（15 文件）
 
 | 文件 | 所属任务 |
 |------|---------|
@@ -261,7 +266,7 @@ DeepSeekAgent(BaseAgent)
 | `backend/app/routers/agent.py` | 3.4 |
 | `backend/app/schemas/agent.py` | 3.4 |
 
-### 前端（9 文件）
+### 前端（11 文件）
 
 | 文件 | 所属任务 |
 |------|---------|
