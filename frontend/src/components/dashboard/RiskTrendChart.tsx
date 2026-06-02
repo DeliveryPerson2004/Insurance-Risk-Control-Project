@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Space, Spin } from 'antd';
-import { DualAxes } from '@ant-design/charts';
+import { Chart } from '@antv/g2';
 import { fetchTrend } from '../../api/dashboard';
 import type { TrendItem } from '../../types';
 
@@ -8,6 +8,8 @@ export default function RiskTrendChart() {
   const [data, setData] = useState<TrendItem[]>([]);
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<Chart | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -21,40 +23,54 @@ export default function RiskTrendChart() {
     return () => clearInterval(interval);
   }, [days]);
 
-  // DualAxes expects two separate data arrays for left/right Y axes
-  const columnData = data.map((d) => ({ date: d.date, total: d.total }));
-  const lineData = data.map((d) => ({ date: d.date, fraud_rate: d.fraud_rate }));
+  // Render chart via @antv/g2 directly, avoiding @ant-design/charts DualAxes issues
+  useEffect(() => {
+    if (!containerRef.current || data.length === 0) return;
 
-  const config = {
-    data: [columnData, lineData],
-    // @ant-design/plots v2 不支持 geometryOptions；
-    // xField / yField 放顶层会被 transformOptions 合并进 children 时覆盖 child 自己的 encode；
-    // 因此直接在 children 中声明各 view 的 encode + axis + style，顶层不放 xField/yField。
-    children: [
-      {
-        type: 'interval',
-        encode: { x: 'date', y: 'total' },
-        scale: { y: { independent: true } },
-        axis: { y: { position: 'left', title: '检测量' } },
-        style: { fill: '#1677ff' },
-      },
-      {
-        type: 'line',
-        encode: { x: 'date', y: 'fraud_rate' },
-        scale: { y: { independent: true, domain: [0, 1] } },
-        axis: {
-          y: {
-            position: 'right',
-            title: '欺诈率',
-            labelFormatter: (v: number) => `${(v * 100).toFixed(0)}%`,
-          },
-        },
-        style: { stroke: '#ff4d4f', lineWidth: 2 },
-        point: { size: 3 },
-        smooth: true,
-      },
-    ],
-  };
+    // Destroy previous chart
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const chart = new Chart({
+      container: containerRef.current,
+      autoFit: true,
+      height: 220,
+    });
+
+    // Shared x-axis
+    chart.data(data);
+
+    // Left Y: column for daily total
+    chart
+      .interval()
+      .encode('x', 'date')
+      .encode('y', 'total')
+      .axis('y', { title: '检测量' })
+      .style('fill', '#1677ff');
+
+    // Right Y: line for fraud rate
+    chart
+      .line()
+      .encode('x', 'date')
+      .encode('y', 'fraud_rate')
+      .scale('y', { independent: true })
+      .axis('y', {
+        position: 'right',
+        title: '欺诈率',
+        labelFormatter: (v: number) => `${(v * 100).toFixed(0)}%`,
+      })
+      .style('stroke', '#ff4d4f')
+      .style('lineWidth', 2);
+
+    chart.render();
+    chartRef.current = chart;
+
+    return () => {
+      chart.destroy();
+      chartRef.current = null;
+    };
+  }, [data]);
 
   return (
     <div>
@@ -73,10 +89,10 @@ export default function RiskTrendChart() {
           ))}
         </Space>
       </div>
-      {loading ? <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} /> : (
-        <div style={{ height: 220 }}>
-          <DualAxes {...config} autoFit />
-        </div>
+      {loading ? (
+        <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} />
+      ) : (
+        <div ref={containerRef} style={{ height: 220 }} />
       )}
     </div>
   );
