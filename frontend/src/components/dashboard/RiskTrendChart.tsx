@@ -27,25 +27,30 @@ export default function RiskTrendChart() {
 
   const config = {
     data: [columnData, lineData],
-    xField: 'date',
-    yField: ['total', 'fraud_rate'],
-    geometryOptions: [
-      { geometry: 'column', color: '#1677ff' },
+    // @ant-design/plots v2 不支持 geometryOptions；
+    // xField / yField 放顶层会被 transformOptions 合并进 children 时覆盖 child 自己的 encode；
+    // 因此直接在 children 中声明各 view 的 encode + axis + style，顶层不放 xField/yField。
+    children: [
       {
-        geometry: 'line',
-        color: '#ff4d4f',
-        lineStyle: { lineWidth: 2 },
+        type: 'interval',
+        encode: { x: 'date', y: 'total' },
+        axis: { y: { title: '检测量' } },
+        style: { fill: '#1677ff', maxWidth: 20 },
+      },
+      {
+        type: 'line',
+        encode: { x: 'date', y: 'fraud_rate' },
+        axis: {
+          y: {
+            title: '欺诈率',
+            labelFormatter: (v: number) => `${(v * 100).toFixed(0)}%`,
+          },
+        },
+        style: { stroke: '#ff4d4f', lineWidth: 2 },
         point: { size: 3 },
         smooth: true,
       },
     ],
-    yAxis: {
-      total: { title: { text: '检测量' } },
-      fraud_rate: {
-        title: { text: '欺诈率' },
-        label: { formatter: (v: string) => `${(+(v || 0) * 100).toFixed(0)}%` },
-      },
-    },
   };
 
   return (
