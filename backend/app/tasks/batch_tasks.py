@@ -18,11 +18,11 @@ os.makedirs(RESULT_DIR, exist_ok=True)
 
 def _update_progress(task_id: str, **kwargs):
     """Update task progress in Redis."""
-    backend = celery_app.backend
+    from backend.app.services.batch_service import _redis_get, _redis_set
     key = f"batch_task:{task_id}"
-    current = backend.get(key) or {}
+    current = _redis_get(key) or {}
     current.update(kwargs)
-    backend.set(key, current)
+    _redis_set(key, current)
 
 
 @celery_app.task(bind=True, max_retries=0)

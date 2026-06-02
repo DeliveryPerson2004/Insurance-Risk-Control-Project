@@ -51,7 +51,7 @@ async def list_batch_tasks(
     current_user: User = Depends(get_current_user),
 ):
     """当前用户历史批量任务列表."""
-    result = await batch_service.list_batch_tasks(db, page, size)
+    result = await batch_service.list_batch_tasks(db, current_user.user_id, page, size)
     return ok(result)
 
 
