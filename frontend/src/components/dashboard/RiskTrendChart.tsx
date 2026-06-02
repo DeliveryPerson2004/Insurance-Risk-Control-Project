@@ -21,8 +21,12 @@ export default function RiskTrendChart() {
     return () => clearInterval(interval);
   }, [days]);
 
+  // DualAxes expects two separate data arrays for left/right Y axes
+  const columnData = data.map((d) => ({ date: d.date, total: d.total }));
+  const lineData = data.map((d) => ({ date: d.date, fraud_rate: d.fraud_rate }));
+
   const config = {
-    data: [data, data],
+    data: [columnData, lineData],
     xField: 'date',
     yField: ['total', 'fraud_rate'],
     geometryOptions: [
@@ -32,13 +36,14 @@ export default function RiskTrendChart() {
         color: '#ff4d4f',
         lineStyle: { lineWidth: 2 },
         point: { size: 3 },
+        smooth: true,
       },
     ],
     yAxis: {
       total: { title: { text: '检测量' } },
       fraud_rate: {
         title: { text: '欺诈率' },
-        label: { formatter: (v: string) => `${(parseFloat(v) * 100).toFixed(0)}%` },
+        label: { formatter: (v: string) => `${(+(v || 0) * 100).toFixed(0)}%` },
       },
     },
   };
