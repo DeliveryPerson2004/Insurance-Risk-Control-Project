@@ -65,7 +65,11 @@ export default function RiskTrendChart() {
           ))}
         </Space>
       </div>
-      {loading ? <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} /> : <DualAxes {...config} height={220} />}
+      {loading ? <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} /> : (
+        <div style={{ height: 220 }}>
+          <DualAxes {...config} autoFit />
+        </div>
+      )}
     </div>
   );
 }
