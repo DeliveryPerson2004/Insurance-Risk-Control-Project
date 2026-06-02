@@ -39,7 +39,7 @@ export default function CaseListPage() {
     const pageNum = p ?? 1;
     const sizeNum = s ?? 20;
     setPage(pageNum);
-    setSize(sizeNum);
+    setPageSize(sizeNum);
     setLoading(true);
     try {
       const res = await fetchCases({
