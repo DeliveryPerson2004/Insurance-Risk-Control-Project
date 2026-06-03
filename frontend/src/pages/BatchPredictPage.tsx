@@ -11,6 +11,7 @@ import {
 } from '../api/batch';
 import type { BatchTaskStatus, BatchTaskItem } from '../types';
 import EmptyState from '../components/common/EmptyState';
+import { TableSkeleton } from '../components/common/Skeleton';
 
 const { Title } = Typography;
 
@@ -18,14 +19,18 @@ export default function BatchPredictPage() {
   const [currentTask, setCurrentTask] = useState<BatchTaskStatus | null>(null);
   const [taskList, setTaskList] = useState<BatchTaskItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadTaskList = useCallback(async () => {
+    setListLoading(true);
     try {
       const data = await fetchBatchList(1, 20);
       setTaskList(data.items);
     } catch {
       // ignore
+    } finally {
+      setListLoading(false);
     }
   }, []);
 
@@ -164,7 +169,9 @@ export default function BatchPredictPage() {
       )}
 
       <Card title="历史任务">
-        {taskList.length === 0 ? (
+        {listLoading ? (
+          <TableSkeleton rows={5} />
+        ) : taskList.length === 0 ? (
           <EmptyState description="暂无批量预测任务" />
         ) : (
           <Table
