@@ -9,9 +9,9 @@ interface Props {
 }
 
 const LEVEL_CONFIG = {
-  high: { color: '#ff4d4f', label: '高风险' },
-  medium: { color: '#faad14', label: '中等风险' },
-  low: { color: '#52c41a', label: '低风险' },
+  high: { color: '#DC2626', label: '高风险' },
+  medium: { color: '#947008', label: '中等风险' },
+  low: { color: '#4A5630', label: '低风险' },
 };
 
 export default function RiskGauge({ fraudProb, riskLevel, threshold }: Props) {
@@ -34,12 +34,12 @@ export default function RiskGauge({ fraudProb, riskLevel, threshold }: Props) {
         {/* 半圆背景色段 */}
         <defs>
           <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#52c41a" />
-            <stop offset="36%" stopColor="#52c41a" />
-            <stop offset="36%" stopColor="#faad14" />
-            <stop offset="70%" stopColor="#faad14" />
-            <stop offset="70%" stopColor="#ff4d4f" />
-            <stop offset="100%" stopColor="#ff4d4f" />
+            <stop offset="0%" stopColor="#4A5630" />
+            <stop offset="36%" stopColor="#4A5630" />
+            <stop offset="36%" stopColor="#947008" />
+            <stop offset="70%" stopColor="#947008" />
+            <stop offset="70%" stopColor="#DC2626" />
+            <stop offset="100%" stopColor="#DC2626" />
           </linearGradient>
         </defs>
         <path
@@ -55,17 +55,17 @@ export default function RiskGauge({ fraudProb, riskLevel, threshold }: Props) {
           y1={cy}
           x2={nx}
           y2={ny}
-          stroke="#333"
+          stroke="#292524"
           strokeWidth="2"
           strokeLinecap="round"
         />
-        <circle cx={cx} cy={cy} r="4" fill="#333" />
+        <circle cx={cx} cy={cy} r="4" fill="#292524" />
         {/* 刻度标签 */}
-        <text x={probToX(0)} y="112" fontSize="9" fill="#999" textAnchor="middle">0</text>
-        <text x={probToX(threshold)} y="112" fontSize="9" fill="#999" textAnchor="middle">{threshold.toFixed(2)}</text>
-        <text x={probToX(0.5)} y="112" fontSize="9" fill="#999" textAnchor="middle">0.5</text>
-        <text x={probToX(0.7)} y="112" fontSize="9" fill="#999" textAnchor="middle">0.7</text>
-        <text x={probToX(1.0)} y="112" fontSize="9" fill="#999" textAnchor="middle">1.0</text>
+        <text x={probToX(0)} y="112" fontSize="9" fill="#A8A29E" textAnchor="middle">0</text>
+        <text x={probToX(threshold)} y="112" fontSize="9" fill="#A8A29E" textAnchor="middle">{threshold.toFixed(2)}</text>
+        <text x={probToX(0.5)} y="112" fontSize="9" fill="#A8A29E" textAnchor="middle">0.5</text>
+        <text x={probToX(0.7)} y="112" fontSize="9" fill="#A8A29E" textAnchor="middle">0.7</text>
+        <text x={probToX(1.0)} y="112" fontSize="9" fill="#A8A29E" textAnchor="middle">1.0</text>
       </svg>
       <div style={{ marginTop: -8 }}>
         <Title level={3} style={{ color: cfg.color, marginBottom: 0 }}>

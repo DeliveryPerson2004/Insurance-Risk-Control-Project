@@ -8,7 +8,7 @@ interface Props {
 export default function ShapExplanation({ items }: Props) {
   return (
     <div>
-      <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: '#666' }}>
+      <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: '#292524' }}>
         关键疑点特征（Top 10 SHAP）
       </div>
       {items.map((item, i) => (
@@ -19,12 +19,12 @@ export default function ShapExplanation({ items }: Props) {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '6px 0',
-            borderBottom: i < items.length - 1 ? '1px solid #f0f0f0' : 'none',
+            borderBottom: i < items.length - 1 ? '1px solid #E7E5E2' : 'none',
             fontSize: 13,
           }}
         >
           <span style={{ flex: 1, fontWeight: 500 }}>{item.feature}</span>
-          <span style={{ width: 60, textAlign: 'right', color: '#999' }}>
+          <span style={{ width: 60, textAlign: 'right', color: '#A8A29E' }}>
             {typeof item.value === 'number' ? item.value.toFixed(2) : item.value}
           </span>
           <span
@@ -32,7 +32,7 @@ export default function ShapExplanation({ items }: Props) {
               width: 80,
               textAlign: 'right',
               fontWeight: 600,
-              color: item.direction === '+' ? '#ff4d4f' : '#52c41a',
+              color: item.direction === '+' ? '#DC2626' : '#4A5630',
             }}
           >
             {item.direction === '+' ? (
@@ -44,7 +44,7 @@ export default function ShapExplanation({ items }: Props) {
           </span>
         </div>
       ))}
-      <div style={{ marginTop: 8, fontSize: 11, color: '#999' }}>
+      <div style={{ marginTop: 8, fontSize: 11, color: '#A8A29E' }}>
         仅展示 Top 10 SHAP 特征，完整 35 特征值已存入数据库
       </div>
     </div>
