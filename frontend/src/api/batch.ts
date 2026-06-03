@@ -4,10 +4,11 @@ import type { ApiResponse, BatchTaskStatus, BatchTaskListResponse } from '../typ
 export async function uploadBatch(file: File): Promise<{ task_id: string; status: string }> {
   const formData = new FormData();
   formData.append('file', file);
+  // 不设 Content-Type，让 axios 自动添加正确的 boundary
   const res = await client.post<ApiResponse<{ task_id: string; status: string }>>(
     '/predict/batch',
     formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
+    { timeout: 120000 },
   );
   return res.data.data;
 }
