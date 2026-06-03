@@ -259,3 +259,24 @@ export interface UserListResponse {
   page: number;
   size: number;
 }
+
+// ---- 数据管理 ----
+export interface DataTaskStatus {
+  task_id: string;
+  filename: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  total: number | null;
+  processed: number | null;
+  success: number | null;
+  failed: number | null;
+  error_message: string | null;
+  created_at: string | null;
+  completed_at: string | null;
+}
+
+export interface DataTaskListResponse {
+  items: DataTaskStatus[];
+  total: number;
+  page: number;
+  size: number;
+}
