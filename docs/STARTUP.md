@@ -121,7 +121,10 @@ docker compose up -d postgres redis
 # 终端 2: 后端热重载
 uv run uvicorn backend.app.main:app --reload --port 8000
 
-# 终端 3: 前端热重载
+# 终端 3: Celery worker（批量预测 + 数据导入任务处理）
+uv run celery -A backend.app.tasks.celery_app worker --loglevel=info --pool=solo --without-mingle --without-gossip --without-heartbeat
+
+# 终端 4: 前端热重载
 cd frontend && npm run dev
 # 访问 http://localhost:5173（Vite proxy → 后端 8000）
 ```

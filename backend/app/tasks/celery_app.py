@@ -20,4 +20,8 @@ celery_app.conf.update(
     task_track_started=True,
     task_soft_time_limit=600,
     task_time_limit=900,
+    broker_transport_options={
+        "visibility_timeout": 3600,
+        "polling_interval": 0.5,  # 减少轮询间隔，加快任务拾取
+    },
 )

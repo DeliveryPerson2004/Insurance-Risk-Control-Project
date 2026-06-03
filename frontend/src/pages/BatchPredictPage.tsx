@@ -58,7 +58,7 @@ export default function BatchPredictPage() {
           pollingRef.current = null;
         }
       }
-    }, 3000);
+    }, 2000);  // 2 秒轮询
   }, [loadTaskList]);
 
   const handleUpload = useCallback(

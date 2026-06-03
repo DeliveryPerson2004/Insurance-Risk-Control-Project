@@ -64,7 +64,7 @@ export default function DataUpload() {
           message.warning(`任务 ${taskId} 状态查询超时，请刷新页面查看`);
         }
       }
-    }, 5000);
+    }, 2000);  // 2 秒轮询，减少"等待中"感知延迟
     pollMapRef.current.set(taskId, interval);
   }, []);
 
