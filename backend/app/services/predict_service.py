@@ -148,6 +148,89 @@ def _build_field_options() -> dict:
 
     groups_order = ["诊断信息", "金额信息", "保单信息", "时间特征", "被保险人画像", "医院信息"]
 
+    # 中文标签映射（覆盖 ICD-10 等英文选项）
+    ICD10_CN: dict[str, str] = {
+        "BLOOD": "血液及造血器官疾病",
+        "CIRCULATORY": "循环系统疾病",
+        "CONGENITAL": "先天性畸形",
+        "DIGESTIVE": "消化系统疾病",
+        "ENDOCRINE": "内分泌疾病",
+        "EYE_EAR": "眼及附器疾病",
+        "FACTORS": "影响健康因素",
+        "GENITOURINARY": "泌尿生殖系统疾病",
+        "INFECTIOUS": "传染病",
+        "INJURY": "损伤中毒",
+        "MENTAL": "精神行为障碍",
+        "MUSCULOSKELETAL": "肌肉骨骼系统疾病",
+        "NEOPLASM": "肿瘤",
+        "NERVOUS": "神经系统疾病",
+        "OTHER": "其他",
+        "PERINATAL": "围生期疾病",
+        "PREGNANCY": "妊娠分娩",
+        "RESPIRATORY": "呼吸系统疾病",
+        "SKIN": "皮肤皮下组织疾病",
+        "SYMPTOMS": "症状体征",
+    }
+    MBR_TYPE_CN: dict[str, str] = {
+        "APPLICANT": "主申请人",
+        "CHILD": "子女",
+        "PARENTS": "父母",
+        "SPOUSE": "配偶",
+    }
+    BH_CATEGORY_CN: dict[str, str] = {
+        "CJF": "常见病", "CLF": "慢性病", "CWF": "大病",
+        "GHF": "高额病", "JCF": "基础病", "YPF": "药品费",
+        "ZFYP": "政府药品", "ZLF": "诊疗费", "ZYF": "中药费",
+        "OTHER": "其他",
+    }
+    BH_PREFIX_CN: dict[str, str] = {
+        "100PCT": "100%报销", "NF": "非基金", "NON_SOCIAL": "非社保",
+        "NS": "非标准", "OTHER": "其他", "SOCIAL": "社保",
+    }
+    BEN_TYPE_CN: dict[str, str] = {
+        "BENEFIT_TYPE_DBIP": "门诊住院(DBIP)",
+        "BENEFIT_TYPE_DBOP": "门诊(DBOP)",
+        "BENEFIT_TYPE_DT": "牙科(DT)",
+        "BENEFIT_TYPE_GGIP": "大病住院(GGIP)",
+        "BENEFIT_TYPE_IP": "住院(IP)",
+        "BENEFIT_TYPE_IPCASB": "住院日额(IPCASB)",
+        "BENEFIT_TYPE_JWOP": "境外门诊(JWOP)",
+        "BENEFIT_TYPE_MA": "医疗援助(MA)",
+        "BENEFIT_TYPE_MAIP": "医疗援助住院(MAIP)",
+        "BENEFIT_TYPE_MAOP": "医疗援助门诊(MAOP)",
+        "BENEFIT_TYPE_MEMR": "医疗急诊(MEMR)",
+        "BENEFIT_TYPE_MT": "生育(MT)",
+        "BENEFIT_TYPE_OP": "门诊(OP)",
+        "BENEFIT_TYPE_PA": "个人意外(PA)",
+        "BENEFIT_TYPE_VS": "视力(VS)",
+        "BENEFIT_TYPE_YWIP": "域外住院(YWIP)",
+        "BENEFIT_TYPE_YWOP": "域外门诊(YWOP)",
+    }
+
+    # 字段名 → (中文标签映射, 是否过滤乱码)
+    SELECT_LABEL_MAPS: dict[str, dict[str, str]] = {
+        "ICD10_CHAPTER": ICD10_CN,
+        "MBR_TYPE": MBR_TYPE_CN,
+        "BH_CATEGORY": BH_CATEGORY_CN,
+        "BH_PREFIX": BH_PREFIX_CN,
+        "BEN_TYPE": BEN_TYPE_CN,
+    }
+
+    # 二进制字段：直接提供 否/是 选项，不再让用户猜 0/1
+    BINARY_SELECT_FIELDS: dict[str, str] = {
+        "IS_INPATIENT": "是否住院",
+        "INCUR_IS_WEEKEND": "是否周末就诊",
+        "IS_NEW_INSURED": "是否新保户",
+        "IS_LONGTERM_INSURED": "是否长期保户",
+    }
+
+    # 数值字段的 max 约束
+    NUMERIC_MAX: dict[str, int] = {
+        "INCUR_MONTH": 12,
+        "INCUR_DAYOFWEEK": 6,
+        "INCUR_QUARTER": 4,
+    }
+
     # 字段 → 分组 + label 映射
     field_meta_map = {
         # 诊断信息
@@ -163,7 +246,7 @@ def _build_field_options() -> dict:
         "RECEIPT_TO_SUB_RATIO": ("金额信息", "发票/申请比", "number"),
         # 保单信息
         "KIND_CODE": ("保单信息", "险种代码", "select"),
-        "POCY_PLAN_DESC": ("保单信息", "保单计划", "select"),
+        "POCY_PLAN_DESC": ("保单信息", "保单计划", "text"),
         "NO_OF_YR": ("保单信息", "投保年限", "number"),
         "POLICY_CNT": ("保单信息", "保单数", "number"),
         "INVOICE_CNT": ("保单信息", "发票数", "number"),
@@ -172,15 +255,15 @@ def _build_field_options() -> dict:
         "DAYS_RCV_TO_CLOSE": ("时间特征", "收件到结案天数", "number"),
         "DAYS_HOSPITALIZATION": ("时间特征", "住院天数", "number"),
         "DAYS_RCV_TO_PAY": ("时间特征", "收件到赔付天数", "number"),
-        "IS_INPATIENT": ("时间特征", "是否住院", "number"),
+        "IS_INPATIENT": ("时间特征", "是否住院", "binary"),
         "INCUR_MONTH": ("时间特征", "就诊月份", "number"),
         "INCUR_DAYOFWEEK": ("时间特征", "就诊星期几", "number"),
         "INCUR_QUARTER": ("时间特征", "就诊季度", "number"),
-        "INCUR_IS_WEEKEND": ("时间特征", "是否周末就诊", "number"),
+        "INCUR_IS_WEEKEND": ("时间特征", "是否周末就诊", "binary"),
         # 被保险人画像
         "MBR_TYPE": ("被保险人画像", "成员类型", "select"),
-        "IS_NEW_INSURED": ("被保险人画像", "是否新保户", "number"),
-        "IS_LONGTERM_INSURED": ("被保险人画像", "是否长期保户", "number"),
+        "IS_NEW_INSURED": ("被保险人画像", "是否新保户", "binary"),
+        "IS_LONGTERM_INSURED": ("被保险人画像", "是否长期保户", "binary"),
         # 医院信息
         "PROV_LEVEL_ORDINAL": ("医院信息", "医院等级", "number"),
     }
@@ -197,20 +280,55 @@ def _build_field_options() -> dict:
         option: dict = {
             "name": name,
             "label": label,
-            "type": ftype,
+            "type": ftype if ftype != "binary" else "select",
             "group": group,
             "required": True,
         }
+
         if ftype == "select":
-            option["options"] = cat_options.get(name, [])
-        else:
+            raw_opts = cat_options.get(name, [])
+            # 过滤乱码选项（含 U+FFFD 的不可用选项）
+            clean_opts = [o for o in raw_opts if "�" not in o]
+            if len(clean_opts) < len(raw_opts):
+                logger.warning(
+                    "字段 '%s' 有 %d 个乱码选项已过滤，剩余 %d 个",
+                    name, len(raw_opts) - len(clean_opts), len(clean_opts),
+                )
+            # 应用中文标签映射
+            label_map = SELECT_LABEL_MAPS.get(name, {})
+            if label_map:
+                option["options"] = [
+                    {"value": o, "label": label_map.get(o, o)}
+                    for o in clean_opts
+                ]
+            else:
+                option["options"] = [{"value": o, "label": o} for o in clean_opts]
+
+        elif ftype == "binary":
+            option["options"] = [
+                {"value": 0, "label": "否"},
+                {"value": 1, "label": "是"},
+            ]
+
+        elif ftype == "text":
+            option["placeholder"] = f"请输入{label}"
+            # POCY_PLAN_DESC 有 606 个全部乱码的选项，提供输入提示
+            raw_opts = cat_options.get(name, [])
+            clean_opts = [o for o in raw_opts if "�" not in o]
+            if clean_opts:
+                option["hint"] = f"可用值示例: {', '.join(clean_opts[:5])}"
+
+        else:  # number
             option["min"] = 0
             option["step"] = 0.01 if name not in {
                 "IS_INPATIENT", "INCUR_MONTH", "INCUR_DAYOFWEEK", "INCUR_QUARTER",
                 "INCUR_IS_WEEKEND", "PROV_LEVEL_ORDINAL", "IS_NEW_INSURED",
                 "IS_LONGTERM_INSURED", "NO_OF_YR", "POLICY_CNT", "INVOICE_CNT",
             } else 1
+            if name in NUMERIC_MAX:
+                option["max"] = NUMERIC_MAX[name]
             option["placeholder"] = f"请输入{label}"
+
         fields.append(option)
 
     _field_options_cache = {"fields": fields, "groups": groups_order}

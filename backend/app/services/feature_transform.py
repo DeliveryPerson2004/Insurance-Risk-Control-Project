@@ -125,7 +125,9 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
     _load_params()
 
     # 验证输入列完整性（惰性加载后 FEATURE_COLS 已知）
-    missing = [c for c in FEATURE_COLS if c not in feature_dict]
+    # 注意：MISSING_COLS 由 transform 内部从 base 列自动生成，调用方无需提供
+    required_cols = [c for c in FEATURE_COLS if c not in MISSING_COLS]
+    missing = [c for c in required_cols if c not in feature_dict]
     if missing:
         raise AppException(
             f"输入缺少 {len(missing)} 个必需字段: {missing}",
@@ -183,11 +185,4 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
 
     # 6) 确保 final 列序与模型期望一致（防御性对齐，防止 JSON 配置漂移）
     from backend.app.services import model_service
-    model_cols = model_service.get_feature_cols()
-    if list(df.columns) != model_cols:
-        logger.warning(
-            "transform_single: 列序与模型不一致，自动重排。"
-            "请检查 preprocess_params.json 的 feature_cols。"
-        )
-        return df[model_cols]
-    return df
+    return df[model_service.get_feature_cols()]

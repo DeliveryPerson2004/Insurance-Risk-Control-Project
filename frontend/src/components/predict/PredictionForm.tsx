@@ -36,6 +36,11 @@ export default function PredictionForm({ onResult, loading }: Props) {
   );
 
   const renderField = (field: FieldOption) => {
+    // 规范化选项：支持旧格式 string[] 和新格式 {value, label}[]
+    const normOptions = (field.options || []).map((o) =>
+      typeof o === 'string' ? { value: o, label: o } : o,
+    );
+
     if (field.type === 'select') {
       return (
         <Form.Item
@@ -47,11 +52,29 @@ export default function PredictionForm({ onResult, loading }: Props) {
           <Select
             showSearch
             placeholder={field.placeholder || `请选择${field.label}`}
-            options={(field.options || []).map((o) => ({ value: o, label: o }))}
+            options={normOptions}
+            dropdownMatchSelectWidth={false}
+            popupMatchSelectWidth={false}
+            style={{ minWidth: 180 }}
           />
         </Form.Item>
       );
     }
+
+    if (field.type === 'text') {
+      return (
+        <Form.Item
+          key={field.name}
+          name={field.name}
+          label={field.label}
+          rules={[{ required: field.required, message: `请输入${field.label}` }]}
+          extra={field.hint}
+        >
+          <Input placeholder={field.placeholder || `请输入${field.label}`} allowClear />
+        </Form.Item>
+      );
+    }
+
     return (
       <Form.Item
         key={field.name}
@@ -62,6 +85,7 @@ export default function PredictionForm({ onResult, loading }: Props) {
         <InputNumber
           style={{ width: '100%' }}
           min={field.min}
+          max={field.max}
           step={field.step}
           placeholder={field.placeholder}
         />

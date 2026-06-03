@@ -51,13 +51,15 @@ export interface RefreshRequest {
 export interface FieldOption {
   name: string;
   label: string;
-  type: 'select' | 'number';
+  type: 'select' | 'number' | 'text';
   group: string;
   required: boolean;
-  options?: string[];
+  options?: (string | { value: string | number; label: string })[];
   min?: number;
+  max?: number;
   step?: number;
   placeholder?: string;
+  hint?: string;
 }
 
 export interface FieldOptionsResponse {
