@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Layout, Menu, Button, theme } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import {
   DashboardOutlined,
   SearchOutlined,
   FileTextOutlined,
   SettingOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -16,13 +14,11 @@ import { useAuth } from '../../hooks/useAuth';
 const { Header, Sider, Content } = Layout;
 
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
   const { user, isAuthenticated, logout, fetchMe } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { token: themeToken } = theme.useToken();
 
-  // Bug #1 修复: 页面刷新后恢复用户信息
+  // 页面刷新后恢复用户信息
   useEffect(() => {
     if (isAuthenticated && !user) {
       fetchMe();
@@ -39,60 +35,70 @@ export default function AppLayout() {
       : []),
   ];
 
-  // Bug #2 修复: 使用完整路径匹配（非 split 首段），确保二级路由正确高亮
   const selectedKey = location.pathname;
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      <Sider
+        width={220}
+        trigger={null}
+        style={{
+          background: '#EBE8E4',
+          borderRight: '1px solid #D6D3D0',
+        }}
+      >
         <div
           style={{
-            height: 32,
-            margin: 16,
-            color: '#fff',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            lineHeight: '32px',
-            overflow: 'hidden',
+            height: 48,
+            margin: '16px 16px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 600,
+            fontSize: 16,
+            color: '#292524',
+            letterSpacing: '-0.02em',
           }}
         >
-          {collapsed ? '风控' : '医保风控系统'}
+          医保风控系统
         </div>
         <Menu
-          theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
+          style={{
+            background: 'transparent',
+            borderInlineEnd: 'none',
+          }}
         />
       </Sider>
       <Layout>
         <Header
           style={{
             padding: '0 24px',
-            background: themeToken.colorBgContainer,
+            background: '#FAFAF9',
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             alignItems: 'center',
+            borderBottom: '1px solid #E7E5E2',
+            height: 48,
+            lineHeight: '48px',
           }}
         >
+          <span style={{ marginRight: 16, fontSize: 13, color: '#44403C', fontWeight: 500 }}>
+            {user?.display_name}
+          </span>
           <Button
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-          />
-          <div>
-            <span style={{ marginRight: 12 }}>{user?.display_name}</span>
-            <Button
-              type="text"
-              icon={<LogoutOutlined />}
-              onClick={logout}
-            >
-              退出
-            </Button>
-          </div>
+            icon={<LogoutOutlined />}
+            onClick={logout}
+            style={{ color: '#6B625D' }}
+          >
+            退出
+          </Button>
         </Header>
-        <Content style={{ margin: 24 }}>
+        <Content style={{ padding: 32, background: '#FAFAF9' }}>
           <Outlet />
         </Content>
       </Layout>
