@@ -297,8 +297,7 @@ docker compose down -v && docker compose up -d --build
 
 ## 关键约束
 
-- 35 特征固定，不得修改特征集或重新训练
-- `data/raw/*` 和 `modeling/xgb_fraud_model.pkl` 不在 Git 中（`.gitignore`）
+- `data/raw/*` 不在 Git 中（`.gitignore`）
 - 类别特征推理前必须 `astype('category')`
 - 前端不使用 emoji，统一使用 `@ant-design/icons`
 - 仪表盘组件 60s 自动轮询

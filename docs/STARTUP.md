@@ -28,18 +28,15 @@ cd frontend && npm install && cd ..
 
 ### 2. 放入必需文件
 
-以下文件在 `.gitignore` 中，需手动准备：
+原始数据文件在 `.gitignore` 中，需手动准备：
 
 ```bash
 # 原始数据文件（放入 data/raw/）
 cp /path/to/data-14-01.xlsx data/raw/
 cp /path/to/data-18-01.xlsx data/raw/
-
-# 训练好的模型文件（放入 modeling/）
-cp /path/to/xgb_fraud_model.pkl modeling/
 ```
 
-> 如果只需要后端和前端的开发调试（不需要模型推理），可以跳过模型文件。调用 `/api/predict/single` 时会返回 503。
+> 模型文件（`modeling/xgb_fraud_model.pkl`）已在 Git 仓库中，无需手动准备。
 
 ### 3. 配置环境变量
 
