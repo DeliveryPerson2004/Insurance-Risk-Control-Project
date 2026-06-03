@@ -26,19 +26,7 @@ uv sync --group ml --group web
 cd frontend && npm install && cd ..
 ```
 
-### 2. 放入必需文件
-
-原始数据文件在 `.gitignore` 中，需手动准备：
-
-```bash
-# 原始数据文件（放入 data/raw/）
-cp /path/to/data-14-01.xlsx data/raw/
-cp /path/to/data-18-01.xlsx data/raw/
-```
-
-> 模型文件（`modeling/xgb_fraud_model.pkl`）已在 Git 仓库中，无需手动准备。
-
-### 3. 配置环境变量
+### 2. 配置环境变量
 
 ```bash
 cp backend/.env.example backend/.env
@@ -54,7 +42,7 @@ cp backend/.env.example backend/.env
 | `MODEL_PATH` | `modeling/xgb_fraud_model.pkl` | 模型文件路径 |
 | `CORS_ORIGINS` | `["http://localhost:5173"]` | 允许的跨域来源 |
 
-### 4. 启动 Docker 服务
+### 3. 启动 Docker 服务
 
 ```bash
 # 启动 PostgreSQL + Redis + Nginx + backend + celery-worker
@@ -66,7 +54,7 @@ docker compose ps
 
 Alembic 迁移会在 backend 容器 entrypoint 中自动执行。
 
-### 5. 填充演示数据
+### 4. 填充演示数据
 
 ```bash
 # 注册一个管理员用户
@@ -78,7 +66,7 @@ curl -X POST http://localhost/api/auth/register \
 docker compose exec backend uv run python backend/scripts/seed_demo.py
 ```
 
-### 6. 验证
+### 5. 验证
 
 ```bash
 # 健康检查
