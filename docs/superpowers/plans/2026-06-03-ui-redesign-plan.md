@@ -270,12 +270,12 @@ git commit -m "feat: self-hosted Inter font + CSS variables + global reset"
         triggerColor: '#44403C',
       },
       Menu: {
-        darkItemBg: '#EBE8E4',
-        darkItemColor: '#44403C',
-        darkItemHoverBg: '#D6D3D0',
-        darkItemSelectedBg: '#EDF0E7',
-        darkItemSelectedColor: '#4A5630',
-        darkSubMenuItemBg: '#EBE8E4',
+        itemBg: 'transparent',
+        itemColor: '#44403C',
+        itemHoverBg: '#D6D3D0',
+        itemSelectedBg: '#EDF0E7',
+        itemSelectedColor: '#4A5630',
+        subMenuItemBg: 'transparent',
       },
       Card: {
         paddingLG: 24,
@@ -323,6 +323,7 @@ git commit -m "feat: apply Warm Slate + Olive theme tokens to ConfigProvider"
 将 `AppLayout.tsx` 全文替换为：
 
 ```tsx
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Layout, Menu, Button } from 'antd';
 import {
@@ -365,6 +366,7 @@ export default function AppLayout() {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
         width={220}
+        trigger={null}
         style={{
           background: '#EBE8E4',
           borderRight: '1px solid #D6D3D0',
@@ -430,7 +432,6 @@ export default function AppLayout() {
 }
 ```
 
-> 需要添加 `import { useEffect } from 'react';` 在顶部。
 
 - [ ] **Step 2: 提交**
 
@@ -664,34 +665,53 @@ git commit -m "refactor: login page — horizontal banner + card, remove purple 
 - Modify: `frontend/src/components/dashboard/RiskTrendChart.tsx`
 - Modify: `frontend/src/components/dashboard/HighRiskTable.tsx`
 
-- [ ] **Step 7.1: DashboardPage — Editorial 双栏布局**
+- [ ] **Step 7.1: DashboardPage — Editorial 双栏布局 (Spec 对齐)**
 
 将 `DashboardPage.tsx` 全文替换为：
 
 ```tsx
+import { useEffect, useState } from 'react';
 import StatsCards from '../components/dashboard/StatsCards';
 import RiskTrendChart from '../components/dashboard/RiskTrendChart';
 import HighRiskTable from '../components/dashboard/HighRiskTable';
 
-export default function DashboardPage() {
-  const today = new Date();
-  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')} · ${weekdays[today.getDay()]}`;
+function DateHeader() {
+  const [dateStr, setDateStr] = useState('');
+  useEffect(() => {
+    const today = new Date();
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    setDateStr(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')} · ${weekdays[today.getDay()]}`);
+  }, []);
+  return <span style={{ color: '#A8A29E' }}>{dateStr}</span>;
+}
 
+export default function DashboardPage() {
   return (
     <div>
       <h2>Dashboard</h2>
       <p style={{ color: '#6B625D', fontSize: 13, marginBottom: 24 }}>
-        欺诈检测概览 · <span style={{ color: '#A8A29E' }}>{dateStr}</span>
+        欺诈检测概览 · <DateHeader />
       </p>
 
-      <StatsCards />
-
-      <div style={{ marginTop: 24 }}>
-        <RiskTrendChart />
+      {/* 核心区: 趋势图 60% + 右侧 4 卡片 40% */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+        <div style={{
+          flex: '60%',
+          background: '#FFFFFF',
+          border: '1px solid #E7E5E2',
+          borderRadius: 6,
+          padding: '20px 24px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}>
+          <RiskTrendChart />
+        </div>
+        <div style={{ flex: '40%' }}>
+          <StatsCards />
+        </div>
       </div>
 
-      <div style={{ marginTop: 24 }}>
+      {/* 高风险表格 — 全宽 */}
+      <div>
         <HighRiskTable />
       </div>
     </div>
@@ -699,13 +719,13 @@ export default function DashboardPage() {
 }
 ```
 
-- [ ] **Step 7.2: StatsCards — 4 指标 Editorial 布局**
+- [ ] **Step 7.2: StatsCards — 4 指标右侧竖排**
 
 将 `StatsCards.tsx` 全文替换为：
 
 ```tsx
 import { useEffect, useState } from 'react';
-import { Statistic } from 'antd';
+import type { CSSProperties } from 'react';
 import {
   ClockCircleOutlined,
   WarningOutlined,
@@ -716,73 +736,66 @@ import { fetchStats } from '../../api/dashboard';
 import type { DashboardStats } from '../../types';
 import { CardSkeleton } from '../common/Skeleton';
 
-const CARD_STYLE: React.CSSProperties = {
+const CARD_STYLE: CSSProperties = {
   background: '#FFFFFF',
   border: '1px solid #E7E5E2',
   borderRadius: 6,
-  padding: '20px 24px',
+  padding: '16px 20px',
   boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
 };
+
+const statProps = (color: string) => ({
+  valueStyle: {
+    fontSize: 28,
+    fontWeight: 600 as const,
+    color,
+    fontFamily: "'Inter', sans-serif",
+    fontFeatureSettings: "'tnum'",
+  },
+});
+
+const titleStyle: CSSProperties = { fontSize: 12, color: '#6B625D', fontWeight: 400 };
 
 export default function StatsCards() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats()
-      .then(setStats)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-
-    const interval = setInterval(() => {
-      fetchStats().then(setStats).catch(() => {});
-    }, 60_000);
+    fetchStats().then(setStats).catch(() => {}).finally(() => setLoading(false));
+    const interval = setInterval(() => { fetchStats().then(setStats).catch(() => {}); }, 60_000);
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) {
-    return <CardSkeleton count={4} />;
-  }
+  if (loading) return <CardSkeleton count={4} />;
 
   return (
-    <div style={{ display: 'flex', gap: 12 }}>
-      {/* 趋势图占 60% — 实际图表在 RiskTrendChart 中，这里放 4 卡片 */}
-      <div style={{ flex: '60%', display: 'flex', gap: 12 }}>
-        <div style={{ flex: 1, ...CARD_STYLE }}>
-          <Statistic
-            title={<span style={{ fontSize: 12, color: '#6B625D', fontWeight: 400 }}>待审核</span>}
-            value={stats?.today_pending ?? 0}
-            prefix={<ClockCircleOutlined style={{ fontSize: 18, color: '#6B625D' }} />}
-            valueStyle={{ fontSize: 32, fontWeight: 600, color: '#292524', fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}
-          />
-        </div>
-        <div style={{ flex: 1, ...CARD_STYLE, borderLeft: '3px solid #4A5630' }}>
-          <Statistic
-            title={<span style={{ fontSize: 12, color: '#6B625D', fontWeight: 400 }}>高风险</span>}
-            value={stats?.today_high_risk ?? 0}
-            prefix={<WarningOutlined style={{ fontSize: 18, color: '#DC2626' }} />}
-            valueStyle={{ fontSize: 32, fontWeight: 600, color: '#DC2626', fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}
-          />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+      <div style={{ flex: 1, ...CARD_STYLE }}>
+        <div style={titleStyle}>待审核</div>
+        <div style={{ fontSize: 32, fontWeight: 600, color: '#292524', fontFeatureSettings: "'tnum'", marginTop: 4 }}>
+          <ClockCircleOutlined style={{ fontSize: 18, color: '#6B625D', marginRight: 8 }} />
+          {stats?.today_pending ?? 0}
         </div>
       </div>
-
-      {/* 右侧竖向 2 卡片 */}
-      <div style={{ flex: '40%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ flex: 1, ...CARD_STYLE }}>
-          <Statistic
-            title={<span style={{ fontSize: 12, color: '#6B625D', fontWeight: 400 }}>今日已处理</span>}
-            value={stats?.today_processed ?? 0}
-            prefix={<CheckCircleOutlined style={{ fontSize: 18, color: '#4A5630' }} />}
-            valueStyle={{ fontSize: 28, fontWeight: 600, color: '#292524', fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}
-          />
+      <div style={{ flex: 1, ...CARD_STYLE, borderLeft: '3px solid #DC2626' }}>
+        <div style={titleStyle}>高风险</div>
+        <div style={{ fontSize: 32, fontWeight: 600, color: '#DC2626', fontFeatureSettings: "'tnum'", marginTop: 4 }}>
+          <WarningOutlined style={{ fontSize: 18, color: '#DC2626', marginRight: 8 }} />
+          {stats?.today_high_risk ?? 0}
         </div>
-        <div style={{ flex: 1, ...CARD_STYLE }}>
-          <Statistic
-            title={<span style={{ fontSize: 12, color: '#6B625D', fontWeight: 400 }}>累计检测量</span>}
-            value={stats?.total_detected ?? 0}
-            prefix={<DatabaseOutlined style={{ fontSize: 18, color: '#6B625D' }} />}
-            valueStyle={{ fontSize: 28, fontWeight: 600, color: '#292524', fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}
-          />
+      </div>
+      <div style={{ flex: 1, ...CARD_STYLE }}>
+        <div style={titleStyle}>已处理</div>
+        <div style={{ fontSize: 28, fontWeight: 600, color: '#292524', fontFeatureSettings: "'tnum'", marginTop: 4 }}>
+          <CheckCircleOutlined style={{ fontSize: 16, color: '#4A5630', marginRight: 8 }} />
+          {stats?.today_processed ?? 0}
+        </div>
+      </div>
+      <div style={{ flex: 1, ...CARD_STYLE }}>
+        <div style={titleStyle}>累计检测量</div>
+        <div style={{ fontSize: 28, fontWeight: 600, color: '#292524', fontFeatureSettings: "'tnum'", marginTop: 4 }}>
+          <DatabaseOutlined style={{ fontSize: 16, color: '#6B625D', marginRight: 8 }} />
+          {stats?.total_detected ?? 0}
         </div>
       </div>
     </div>
@@ -988,20 +1001,7 @@ export default function PredictionForm({ onResult, loading }: Props) {
       );
     }
 
-    if (field.type === 'text') {
-      return (
-        <Form.Item
-          key={field.name}
-          name={field.name}
-          label={<span style={{ fontSize: 12, color: '#6B625D' }}>{field.label}</span>}
-          rules={[{ required: field.required, message: `请输入${field.label}` }]}
-          extra={field.hint ? <span style={{ fontSize: 11, color: '#A8A29E' }}>{field.hint}</span> : undefined}
-        >
-          <Input placeholder={field.placeholder || `请输入${field.label}`} allowClear />
-        </Form.Item>
-      );
-    }
-
+    // field.type === 'number' — InputNumber
     return (
       <Form.Item
         key={field.name}
@@ -1809,11 +1809,26 @@ export default function CaseDetailPage() {
 }
 ```
 
-- [ ] **Step 11.2: CaseDetail 子组件 — 颜色硬编码清除**
+- [ ] **Step 11.2: CaseDetail 子组件 — 全部 6 组件颜色更新**
 
-修改 `CaseDetail.tsx`：
+`CaseDetail.tsx` 中 6 个具名导出组件的颜色硬编码清除。逐个更新：
 
-1. **PredictionCard**: 欺诈概率加颜色（硬编码 `<Tag>` 改为圆点+文字）：
+**InsureeCard**: 无硬编码颜色——ConfigProvider token 覆盖了 Descriptions/Tag 配色，无需代码变更。
+
+**PolicyCard**: 同 InsureeCard，逻辑不变，无需代码变更。
+
+**ClaimCard**: 将 `is_fraud` 的 "欺诈"/"正常" 文字颜色化：
+```tsx
+<Descriptions.Item label="是否欺诈">
+  {claim.is_fraud != null ? (
+    <span style={{ fontWeight: 500, color: claim.is_fraud ? '#DC2626' : '#4A5630' }}>
+      {claim.is_fraud ? '欺诈' : '正常'}
+    </span>
+  ) : '-'}
+</Descriptions.Item>
+```
+
+**PredictionCard**: 将 `<Tag>` 替换为圆点+颜色（去 Tag，去 Ant Design 默认 riskColorMap）：
 ```tsx
 export function PredictionCard({ detail }: { detail: CaseDetailResponse }) {
   const prob = detail.fraud_prob * 100;
@@ -1821,10 +1836,14 @@ export function PredictionCard({ detail }: { detail: CaseDetailResponse }) {
   const rl = detail.risk_level;
   const rc = rl === 'high' ? '#DC2626' : rl === 'medium' ? '#947008' : '#4A5630';
   const rlabel = rl === 'high' ? '高风险' : rl === 'medium' ? '中风险' : '低风险';
+
+  const resultColor: Record<string, string> = { pass: '#4A5630', reject: '#DC2626', investigate: '#947008' };
+  const resultLabel: Record<string, string> = { pass: '通过', reject: '拒绝', investigate: '调查中' };
+
   return (
     <Descriptions column={2} bordered size="small">
       <Descriptions.Item label="欺诈概率">
-        <span style={{ fontWeight: 700, fontSize: 18, color: pc, fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}>
+        <span style={{ fontWeight: 700, fontSize: 24, color: pc, fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}>
           {prob.toFixed(1)}%
         </span>
       </Descriptions.Item>
@@ -1834,18 +1853,102 @@ export function PredictionCard({ detail }: { detail: CaseDetailResponse }) {
           <span style={{ fontWeight: 500, color: rc }}>{rlabel}</span>
         </span>
       </Descriptions.Item>
-      {/* 其余 Descriptions.Item 保持不变 */}
+      <Descriptions.Item label="原始概率">
+        {detail.raw_prob != null ? `${(detail.raw_prob * 100).toFixed(1)}%` : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="阈值">
+        {detail.threshold_used != null ? `${(detail.threshold_used * 100).toFixed(1)}%` : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="人工判定">
+        {detail.manual_result ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: resultColor[detail.manual_result] || '#A8A29E', display: 'inline-block' }} />
+            <span style={{ color: resultColor[detail.manual_result] || '#A8A29E', fontWeight: 500 }}>
+              {resultLabel[detail.manual_result] || detail.manual_result}
+            </span>
+          </span>
+        ) : (
+          <span style={{ color: '#A8A29E', fontSize: 12 }}>待处理</span>
+        )}
+      </Descriptions.Item>
+      <Descriptions.Item label="检测时间">
+        {detail.detect_time ? new Date(detail.detect_time).toLocaleString() : '-'}
+      </Descriptions.Item>
     </Descriptions>
   );
 }
 ```
 
-2. **ShapCard**: 将 `color: 'red'` 和 `color: 'green'` 的 Timeline 颜色改为语义色：
+**ShapCard**: Timeline 颜色更新：
 ```tsx
-color: item.value >= 0 ? '#DC2626' : '#4A5630',
+export function ShapCard({ shapValues }: { shapValues: Record<string, number> | null }) {
+  if (!shapValues || Object.keys(shapValues).length === 0) return null;
+
+  const sorted = Object.entries(shapValues)
+    .map(([feature, value]) => ({ feature, value }))
+    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+    .slice(0, 10);
+
+  return (
+    <div>
+      <Timeline
+        items={sorted.map((item) => ({
+          color: item.value >= 0 ? '#DC2626' : '#4A5630',
+          children: (
+            <span>
+              <strong>{item.feature}</strong>: {item.value >= 0 ? '+' : ''}
+              {item.value.toFixed(4)} {item.value >= 0 ? '(推高欺诈概率)' : '(降低欺诈概率)'}
+            </span>
+          ),
+        }))}
+      />
+    </div>
+  );
+}
 ```
 
-3. **HistoryTimeline**: 将 `#999`、`#666` 替换为 `#6B625D` 和 `#A8A29E`。
+**HistoryTimeline**: 颜色 + Tag 替换：
+```tsx
+export function HistoryTimeline({ history }: { history: CaseDetailResponse['case_history'] }) {
+  if (!history || history.length === 0) {
+    return <p style={{ color: '#6B625D' }}>暂无审核记录</p>;
+  }
+
+  const dotColor: Record<string, string> = { pass: '#4A5630', reject: '#DC2626', investigate: '#947008' };
+  const lbl: Record<string, string> = { pass: '通过', reject: '拒绝', investigate: '调查中' };
+
+  return (
+    <Timeline
+      items={history.map((item) => ({
+        color: dotColor[item.manual_result ?? ''] || '#A8A29E',
+        children: (
+          <div>
+            <div>
+              <strong>{item.reviewer_name ?? '系统'}</strong>
+              {item.manual_result && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  marginLeft: 8, fontSize: 12,
+                  color: dotColor[item.manual_result] || '#A8A29E',
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor[item.manual_result] || '#A8A29E', display: 'inline-block' }} />
+                  {lbl[item.manual_result] || item.manual_result}
+                </span>
+              )}
+              <span style={{ marginLeft: 8, color: '#A8A29E', fontSize: 12 }}>
+                {item.operate_time ? new Date(item.operate_time).toLocaleString() : '-'}
+              </span>
+            </div>
+            {item.remark && (
+              <div style={{ marginTop: 4, color: '#6B625D' }}>{item.remark}</div>
+            )}
+          </div>
+        ),
+      }))}
+    />
+  );
+}
+```
 
 - [ ] **Step 11.3: AdjudicateModal — 无需大改**
 
