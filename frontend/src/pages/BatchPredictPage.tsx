@@ -150,7 +150,7 @@ export default function BatchPredictPage() {
       dataIndex: 'created_at',
       key: 'created_at',
       width: 180,
-      render: (v: string) => v?.slice(0, 19) || '-',
+      render: (v: string) => v ? new Date(v).toLocaleString() : '-',
     },
   ];
 

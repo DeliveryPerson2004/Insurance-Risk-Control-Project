@@ -129,7 +129,7 @@ export function PredictionCard({ detail }: { detail: CaseDetailResponse }) {
         )}
       </Descriptions.Item>
       <Descriptions.Item label="检测时间">
-        {detail.detect_time?.slice(0, 19) || '-'}
+        {detail.detect_time ? new Date(detail.detect_time).toLocaleString() : '-'}
       </Descriptions.Item>
     </Descriptions>
   );
@@ -207,7 +207,7 @@ export function HistoryTimeline({
                   </Tag>
                 )}
                 <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>
-                  {item.operate_time?.slice(0, 19) || '-'}
+                  {item.operate_time ? new Date(item.operate_time).toLocaleString() : '-'}
                 </span>
               </div>
               {item.remark && (

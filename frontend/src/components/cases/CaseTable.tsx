@@ -98,7 +98,7 @@ export default function CaseTable({ data, loading, pagination, onPageChange }: P
       dataIndex: 'detect_time',
       key: 'detect_time',
       width: 180,
-      render: (v: string) => v?.slice(0, 19) || '-',
+      render: (v: string) => v ? new Date(v).toLocaleString() : '-',
     },
   ];
 

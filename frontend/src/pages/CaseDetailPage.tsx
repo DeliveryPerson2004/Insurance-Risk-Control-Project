@@ -154,7 +154,7 @@ export default function CaseDetailPage() {
         <Card title="AI 分析报告" size="small" style={{ marginBottom: 16 }}>
           <div style={{ whiteSpace: 'pre-wrap' }}>{agentReport.report_text}</div>
           <Paragraph type="secondary" style={{ marginTop: 8 }}>
-            模型: {agentReport.model_used} | 生成时间: {agentReport.generated_at?.slice(0, 19)}
+            模型: {agentReport.model_used} | 生成时间: {new Date(agentReport.generated_at).toLocaleString()}
           </Paragraph>
         </Card>
       )}
