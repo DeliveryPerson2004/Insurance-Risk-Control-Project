@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.database import get_db
-from backend.app.deps import get_current_user, require_admin
+from backend.app.deps import require_admin
 from backend.app.models.user import User
 from backend.app.schemas.admin import UpdateUserRequest, UserOut, UserListResponse
 from backend.app.services import admin_service
