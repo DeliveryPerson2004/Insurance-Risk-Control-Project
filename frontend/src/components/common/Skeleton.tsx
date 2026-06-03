@@ -46,3 +46,26 @@ export function DetailSkeleton({ cards = 4 }: { cards?: number }) {
     </div>
   );
 }
+
+/** 模拟图表: 标题 + 占位区域 */
+export function ChartSkeleton({ height = 220 }: { height?: number }) {
+  return (
+    <div>
+      <AntSkeleton active paragraph={{ rows: 0 }} title={{ width: '40%' }} />
+      <div
+        style={{
+          height,
+          background: '#fafafa',
+          borderRadius: 8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#ccc',
+          marginTop: 8,
+        }}
+      >
+        加载中...
+      </div>
+    </div>
+  );
+}

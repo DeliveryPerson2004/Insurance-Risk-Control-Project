@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Space, Spin } from 'antd';
+import { Button, Space } from 'antd';
 import { Chart } from '@antv/g2';
 import { fetchTrend } from '../../api/dashboard';
 import type { TrendItem } from '../../types';
+import { ChartSkeleton } from '../common/Skeleton';
 
 export default function RiskTrendChart() {
   const [data, setData] = useState<TrendItem[]>([]);
@@ -90,7 +91,7 @@ export default function RiskTrendChart() {
         </Space>
       </div>
       {loading ? (
-        <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} />
+        <ChartSkeleton height={220} />
       ) : (
         <div ref={containerRef} style={{ height: 220 }} />
       )}

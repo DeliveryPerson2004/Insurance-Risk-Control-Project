@@ -13,6 +13,12 @@ import AdminPage from './pages/AdminPage';
 import AppLayout from './components/layout/AppLayout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
+/** ErrorBoundary 测试页：访问 /error-test 验证错误捕获 */
+function ErrorTestPage() {
+  throw new Error('ErrorBoundary 手动测试 — 如果你看到这个页面，说明 ErrorBoundary 正常捕获了错误。');
+  return null;
+}
+
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -77,6 +83,8 @@ export default function App() {
                 <Route path="cases/:id" element={<CaseDetailPage />} />
                 <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
               </Route>
+              {/* ErrorBoundary 测试路由：访问 /error-test 触发错误页 */}
+              <Route path="/error-test" element={<ErrorTestPage />} />
               <Route path="*" element={<div style={{ padding: 48, textAlign: 'center' }}>404</div>} />
             </Routes>
           </BrowserRouter>

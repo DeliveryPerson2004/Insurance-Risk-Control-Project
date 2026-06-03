@@ -3,6 +3,7 @@ import { Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchHighRisk } from '../../api/dashboard';
 import type { HighRiskItem } from '../../types';
+import { TableSkeleton } from '../common/Skeleton';
 
 const columns: ColumnsType<HighRiskItem> = [
   { title: '案件ID', dataIndex: 'policy_id', key: 'policy_id', width: 180 },
@@ -35,9 +36,13 @@ const columns: ColumnsType<HighRiskItem> = [
 
 export default function HighRiskTable() {
   const [items, setItems] = useState<HighRiskItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchHighRisk(5).then(setItems).catch(() => {});
+    fetchHighRisk(5)
+      .then(setItems)
+      .catch(() => {})
+      .finally(() => setLoading(false));
 
     const interval = setInterval(() => {
       fetchHighRisk(5).then(setItems).catch(() => {});
@@ -50,13 +55,17 @@ export default function HighRiskTable() {
       <div style={{ fontWeight: 600, fontSize: 14, color: '#666', marginBottom: 12 }}>
         高风险案件 Top 5
       </div>
-      <Table
-        columns={columns}
-        dataSource={items}
-        rowKey="id"
-        size="small"
-        pagination={false}
-      />
+      {loading ? (
+        <TableSkeleton rows={5} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={items}
+          rowKey="id"
+          size="small"
+          pagination={false}
+        />
+      )}
     </div>
   );
 }
