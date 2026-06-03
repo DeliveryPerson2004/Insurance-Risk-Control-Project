@@ -32,7 +32,7 @@ async def list_users(
             total=total,
             page=page,
             size=size,
-        ).model_dump()
+        ).model_dump(mode="json")
     )
 
 
@@ -46,4 +46,4 @@ async def update_user(
     updated = await admin_service.update_user(
         db, user_id, body.user_role, body.is_active, current_user.user_id
     )
-    return ok(UserOut.model_validate(updated).model_dump())
+    return ok(UserOut.model_validate(updated).model_dump(mode="json"))
