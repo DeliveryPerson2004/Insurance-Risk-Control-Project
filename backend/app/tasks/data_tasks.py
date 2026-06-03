@@ -48,13 +48,16 @@ def process_data_import(self, task_id: str, filepath: str, filename: str):
         _update_progress(task_id, step="inference")
 
         # 3. 逐行: 特征变换 → 推理 → 入库
-        # 注意: asyncio.run() 的前提是当前线程无运行中的事件循环。
-        # Celery prefork/solo pool 满足此条件。若改用 gevent/eventlet pool，
-        # 需改为 loop.run_until_complete() 或使用 asgiref 的 async_to_sync。
+        # asyncio.run() 创建新事件循环。先 dispose 旧连接池避免 asyncpg
+        # "another operation is in progress" 错误，然后执行推理入库。
         import asyncio
-        results = asyncio.run(
-            _process_rows(feature_df, feature_cols, task_id, total)
-        )
+        from backend.app.database import engine
+
+        async def _run():
+            await engine.dispose()
+            return await _process_rows(feature_df, feature_cols, task_id, total)
+
+        results = asyncio.run(_run())
 
         # 仅在 _process_rows 未设失败状态时覆盖为 completed
         from backend.app.utils.redis_utils import redis_get

@@ -45,12 +45,13 @@ def process_batch(self, task_id: str, filepath: str, filename: str):
 
         # 2. Process rows
         import asyncio
+        from backend.app.database import engine
 
-        loop = asyncio.new_event_loop()
-        results = loop.run_until_complete(
-            _process_rows(df, task_id, total)
-        )
-        loop.close()
+        async def _run():
+            await engine.dispose()
+            return await _process_rows(df, task_id, total)
+
+        results = asyncio.run(_run())
 
         # 3. Generate result CSV
         result_df = pd.DataFrame(results)
