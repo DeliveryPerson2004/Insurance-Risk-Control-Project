@@ -1,11 +1,5 @@
-import { Descriptions, Tag, Timeline } from 'antd';
+import { Descriptions, Timeline } from 'antd';
 import type { CaseDetailResponse } from '../../types';
-
-const riskColorMap: Record<string, string> = {
-  high: 'red',
-  medium: 'orange',
-  low: 'green',
-};
 
 type FV = Record<string, unknown> | null;
 
@@ -91,7 +85,11 @@ export function ClaimCard({ claim, featureValues }: {
           claim.claim_amount != null ? `¥${claim.claim_amount.toLocaleString()}` : '-'}
       </Descriptions.Item>
       <Descriptions.Item label="是否欺诈">
-        {claim.is_fraud != null ? (claim.is_fraud === true ? '欺诈' : '正常') : '-'}
+        {claim.is_fraud != null ? (
+          <span style={{ fontWeight: 500, color: claim.is_fraud ? '#DC2626' : '#4A5630' }}>
+            {claim.is_fraud ? '欺诈' : '正常'}
+          </span>
+        ) : '-'}
       </Descriptions.Item>
     </Descriptions>
   );
@@ -99,33 +97,44 @@ export function ClaimCard({ claim, featureValues }: {
 
 // ---- 预测信息 ----
 export function PredictionCard({ detail }: { detail: CaseDetailResponse }) {
+  const prob = detail.fraud_prob * 100;
+  const pc = prob >= 70 ? '#DC2626' : prob >= 30 ? '#947008' : '#4A5630';
+  const rl = detail.risk_level;
+  const rc = rl === 'high' ? '#DC2626' : rl === 'medium' ? '#947008' : '#4A5630';
+  const rlabel = rl === 'high' ? '高风险' : rl === 'medium' ? '中风险' : '低风险';
+
+  const resultColor: Record<string, string> = { pass: '#4A5630', reject: '#DC2626', investigate: '#947008' };
+  const resultLabel: Record<string, string> = { pass: '通过', reject: '拒绝', investigate: '调查中' };
+
   return (
-    <Descriptions title="预测信息" column={2} bordered size="small" style={{ marginBottom: 16 }}>
+    <Descriptions column={2} bordered size="small">
       <Descriptions.Item label="欺诈概率">
-        {`${(detail.fraud_prob * 100).toFixed(1)}%`}
+        <span style={{ fontWeight: 700, fontSize: 24, color: pc, fontFamily: "'Inter', sans-serif", fontFeatureSettings: "'tnum'" }}>
+          {prob.toFixed(1)}%
+        </span>
+      </Descriptions.Item>
+      <Descriptions.Item label="风险等级">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: rc, display: 'inline-block' }} />
+          <span style={{ fontWeight: 500, color: rc }}>{rlabel}</span>
+        </span>
       </Descriptions.Item>
       <Descriptions.Item label="原始概率">
         {detail.raw_prob != null ? `${(detail.raw_prob * 100).toFixed(1)}%` : '-'}
-      </Descriptions.Item>
-      <Descriptions.Item label="风险等级">
-        <Tag color={riskColorMap[detail.risk_level] || 'default'}>{detail.risk_level}</Tag>
       </Descriptions.Item>
       <Descriptions.Item label="阈值">
         {detail.threshold_used != null ? `${(detail.threshold_used * 100).toFixed(1)}%` : '-'}
       </Descriptions.Item>
       <Descriptions.Item label="人工判定">
         {detail.manual_result ? (
-          <Tag
-            color={
-              { pass: 'green', reject: 'red', investigate: 'blue' }[detail.manual_result] ||
-              'default'
-            }
-          >
-            {{ pass: '通过', reject: '拒绝', investigate: '调查中' }[detail.manual_result] ||
-              detail.manual_result}
-          </Tag>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: resultColor[detail.manual_result] || '#A8A29E', display: 'inline-block' }} />
+            <span style={{ color: resultColor[detail.manual_result] || '#A8A29E', fontWeight: 500 }}>
+              {resultLabel[detail.manual_result] || detail.manual_result}
+            </span>
+          </span>
         ) : (
-          <Tag>待处理</Tag>
+          <span style={{ color: '#A8A29E', fontSize: 12 }}>待处理</span>
         )}
       </Descriptions.Item>
       <Descriptions.Item label="检测时间">
@@ -145,20 +154,17 @@ export function ShapCard({ shapValues }: { shapValues: Record<string, number> | 
     .slice(0, 10);
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <h4>特征贡献排名 (Top 10 SHAP)</h4>
-      <Timeline
-        items={sorted.map((item) => ({
-          color: item.value >= 0 ? 'red' : 'green',
-          children: (
-            <span>
-              <strong>{item.feature}</strong>: {item.value >= 0 ? '+' : ''}
-              {item.value.toFixed(4)} {item.value >= 0 ? '(推高欺诈概率)' : '(降低欺诈概率)'}
-            </span>
-          ),
-        }))}
-      />
-    </div>
+    <Timeline
+      items={sorted.map((item) => ({
+        color: item.value >= 0 ? '#DC2626' : '#4A5630',
+        children: (
+          <span>
+            <strong>{item.feature}</strong>: {item.value >= 0 ? '+' : ''}
+            {item.value.toFixed(4)} {item.value >= 0 ? '(推高欺诈概率)' : '(降低欺诈概率)'}
+          </span>
+        ),
+      }))}
+    />
   );
 }
 
@@ -169,18 +175,13 @@ export function HistoryTimeline({
   history: CaseDetailResponse['case_history'];
 }) {
   if (!history || history.length === 0) {
-    return (
-      <div style={{ marginBottom: 16 }}>
-        <h4>审核历史</h4>
-        <p style={{ color: '#999' }}>暂无审核记录</p>
-      </div>
-    );
+    return <p style={{ color: '#A8A29E' }}>暂无审核记录</p>;
   }
 
-  const resultColorMap: Record<string, string> = {
-    pass: 'green',
-    reject: 'red',
-    investigate: 'blue',
+  const dotColor: Record<string, string> = {
+    pass: '#4A5630',
+    reject: '#DC2626',
+    investigate: '#947008',
   };
   const resultLabelMap: Record<string, string> = {
     pass: '通过',
@@ -189,34 +190,31 @@ export function HistoryTimeline({
   };
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <h4>审核历史</h4>
-      <Timeline
-        items={history.map((item) => ({
-          color: resultColorMap[item.manual_result ?? ''] || 'gray',
-          children: (
+    <Timeline
+      items={history.map((item) => ({
+        color: dotColor[item.manual_result ?? ''] || '#A8A29E',
+        children: (
+          <div>
             <div>
-              <div>
-                <strong>{item.reviewer_name ?? '系统'}</strong>
-                {item.manual_result && (
-                  <Tag
-                    color={resultColorMap[item.manual_result] || 'default'}
-                    style={{ marginLeft: 8 }}
-                  >
+              <strong>{item.reviewer_name ?? '系统'}</strong>
+              {item.manual_result && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor[item.manual_result] || '#A8A29E', display: 'inline-block' }} />
+                  <span style={{ color: dotColor[item.manual_result] || '#6B625D', fontWeight: 500, fontSize: 12 }}>
                     {resultLabelMap[item.manual_result] || item.manual_result}
-                  </Tag>
-                )}
-                <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>
-                  {item.operate_time ? new Date(item.operate_time).toLocaleString() : '-'}
+                  </span>
                 </span>
-              </div>
-              {item.remark && (
-                <div style={{ marginTop: 4, color: '#666' }}>{item.remark}</div>
               )}
+              <span style={{ marginLeft: 8, color: '#A8A29E', fontSize: 12 }}>
+                {item.operate_time ? new Date(item.operate_time).toLocaleString() : '-'}
+              </span>
             </div>
-          ),
-        }))}
-      />
-    </div>
+            {item.remark && (
+              <div style={{ marginTop: 4, color: '#6B625D' }}>{item.remark}</div>
+            )}
+          </div>
+        ),
+      }))}
+    />
   );
 }
