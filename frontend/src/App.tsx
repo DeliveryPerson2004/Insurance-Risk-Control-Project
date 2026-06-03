@@ -9,6 +9,7 @@ import PredictionPage from './pages/PredictionPage';
 import BatchPredictPage from './pages/BatchPredictPage';
 import CaseListPage from './pages/CaseListPage';
 import CaseDetailPage from './pages/CaseDetailPage';
+import AdminPage from './pages/AdminPage';
 import AppLayout from './components/layout/AppLayout';
 
 const queryClient = new QueryClient();
@@ -64,7 +65,7 @@ export default function App() {
                 <Route path="predict/batch" element={<BatchPredictPage />} />
                 <Route path="cases" element={<CaseListPage />} />
                 <Route path="cases/:id" element={<CaseDetailPage />} />
-                <Route path="admin" element={<div>管理面板（Phase 4）</div>} />
+                <Route path="admin" element={<AdminPage />} />
               </Route>
               <Route path="*" element={<div style={{ padding: 48, textAlign: 'center' }}>404</div>} />
             </Routes>
