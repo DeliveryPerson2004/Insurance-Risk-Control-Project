@@ -224,6 +224,19 @@ def _build_field_options() -> dict:
         "IS_LONGTERM_INSURED": "是否长期保户",
     }
 
+    # 枚举型数值字段改为 Select（训练数据中仅有限个取值）
+    ENUM_NUMBER_FIELDS: dict[str, list[tuple[int, str]]] = {
+        "PROV_LEVEL_ORDINAL": [
+            (0, "未评级"),
+            (1, "一级"),
+            (2, "二级"),
+            (3, "三级"),
+            (4, "特需"),
+            (10, "医保"),
+            (11, "非医保"),
+        ],
+    }
+
     # 数值字段的 max 约束
     NUMERIC_MAX: dict[str, int] = {
         "INCUR_MONTH": 12,
@@ -265,7 +278,7 @@ def _build_field_options() -> dict:
         "IS_NEW_INSURED": ("被保险人画像", "是否新保户", "binary"),
         "IS_LONGTERM_INSURED": ("被保险人画像", "是否长期保户", "binary"),
         # 医院信息
-        "PROV_LEVEL_ORDINAL": ("医院信息", "医院等级", "number"),
+        "PROV_LEVEL_ORDINAL": ("医院信息", "医院等级", "enum_number"),
     }
 
     fields = []
@@ -280,7 +293,7 @@ def _build_field_options() -> dict:
         option: dict = {
             "name": name,
             "label": label,
-            "type": ftype if ftype != "binary" else "select",
+            "type": "select" if ftype in ("binary", "enum_number") else ftype,
             "group": group,
             "required": True,
         }
@@ -308,6 +321,11 @@ def _build_field_options() -> dict:
             option["options"] = [
                 {"value": 0, "label": "否"},
                 {"value": 1, "label": "是"},
+            ]
+
+        elif ftype == "enum_number":
+            option["options"] = [
+                {"value": v, "label": l} for v, l in ENUM_NUMBER_FIELDS[name]
             ]
 
         elif ftype == "text":
