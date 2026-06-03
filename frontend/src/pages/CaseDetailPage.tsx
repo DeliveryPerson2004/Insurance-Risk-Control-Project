@@ -5,9 +5,10 @@ import {
   Button,
   Space,
   Typography,
-  Spin,
   message,
 } from 'antd';
+import { DetailSkeleton } from '../components/common/Skeleton';
+import EmptyState from '../components/common/EmptyState';
 import {
   ArrowLeftOutlined,
   AuditOutlined,
@@ -110,15 +111,11 @@ export default function CaseDetailPage() {
   );
 
   if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: 100 }}>
-        <Spin size="large" />
-      </div>
-    );
+    return <DetailSkeleton cards={4} />;
   }
 
   if (!detail) {
-    return <div>案件不存在</div>;
+    return <EmptyState description="案件不存在" />;
   }
 
   return (

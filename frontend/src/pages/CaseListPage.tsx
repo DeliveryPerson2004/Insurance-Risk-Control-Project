@@ -13,6 +13,8 @@ import { SearchOutlined } from '@ant-design/icons';
 import CaseTable from '../components/cases/CaseTable';
 import { fetchCases } from '../api/cases';
 import type { CaseListItem } from '../types';
+import { TableSkeleton } from '../components/common/Skeleton';
+import EmptyState from '../components/common/EmptyState';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -154,16 +156,22 @@ export default function CaseListPage() {
       </Card>
 
       <Card>
-        <CaseTable
-          data={data}
-          loading={loading}
-          pagination={{
-            current: page,
-            pageSize: pageSize,
-            total: total,
-          }}
-          onPageChange={handlePageChange}
-        />
+        {loading ? (
+          <TableSkeleton />
+        ) : data.length === 0 ? (
+          <EmptyState description="暂无案件" />
+        ) : (
+          <CaseTable
+            data={data}
+            loading={false}
+            pagination={{
+              current: page,
+              pageSize: pageSize,
+              total: total,
+            }}
+            onPageChange={handlePageChange}
+          />
+        )}
       </Card>
     </div>
   );

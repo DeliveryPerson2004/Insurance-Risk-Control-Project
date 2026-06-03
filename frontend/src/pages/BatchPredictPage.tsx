@@ -10,6 +10,7 @@ import {
   getBatchDownloadUrl,
 } from '../api/batch';
 import type { BatchTaskStatus, BatchTaskItem } from '../types';
+import EmptyState from '../components/common/EmptyState';
 
 const { Title } = Typography;
 
@@ -163,13 +164,17 @@ export default function BatchPredictPage() {
       )}
 
       <Card title="历史任务">
-        <Table
-          columns={columns}
-          dataSource={taskList}
-          rowKey="task_id"
-          pagination={{ pageSize: 20, size: 'small' }}
-          size="small"
-        />
+        {taskList.length === 0 ? (
+          <EmptyState description="暂无批量预测任务" />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={taskList}
+            rowKey="task_id"
+            pagination={{ pageSize: 20, size: 'small' }}
+            size="small"
+          />
+        )}
       </Card>
     </div>
   );

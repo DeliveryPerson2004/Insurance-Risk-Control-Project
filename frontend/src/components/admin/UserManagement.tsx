@@ -7,6 +7,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { fetchUsers, updateUser } from '../../api/admin';
 import { useAuthStore } from '../../store/authStore';
 import type { User } from '../../types';
+import EmptyState from '../common/EmptyState';
 
 const { Text } = Typography;
 
@@ -141,20 +142,24 @@ export default function UserManagement() {
           }}
         />
       </Space>
-      <Table
-        rowKey="user_id"
-        columns={columns}
-        dataSource={users}
-        loading={loading}
-        pagination={{
-          current: page,
-          pageSize: size,
-          total,
-          showSizeChanger: true,
-          showTotal: (t) => `共 ${t} 个用户`,
-          onChange: (p, s) => { setPage(p); setSize(s); },
-        }}
-      />
+      {!loading && users.length === 0 ? (
+        <EmptyState description="暂无用户" />
+      ) : (
+        <Table
+          rowKey="user_id"
+          columns={columns}
+          dataSource={users}
+          loading={loading}
+          pagination={{
+            current: page,
+            pageSize: size,
+            total,
+            showSizeChanger: true,
+            showTotal: (t) => `共 ${t} 个用户`,
+            onChange: (p, s) => { setPage(p); setSize(s); },
+          }}
+        />
+      )}
     </div>
   );
 }
