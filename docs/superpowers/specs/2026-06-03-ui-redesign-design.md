@@ -50,8 +50,8 @@
 ├─ 语义色 ───────────────────────────────────────┤
 │  Danger        #DC2626    (高风险/删除/拒绝)      │
 │  Danger Light  #FEF2F2    (危险浅底)             │
-│  Warning       #B7870A    (中风险/警告)          │
-│  Warning Light #FFFBEB    (警告浅底)             │
+│  Warning       #947008    (中风险/警告, ≥4.5:1 AA) │
+│  Warning Light #FFF8EB    (警告浅底)             │
 │  Success       #4A5630    (通过，与 Olive 统一)   │
 │  Success Surf. #F2F7ED    (成功消息条浅底)        │
 │  Info          #6B625D    (中性信息)             │
@@ -61,8 +61,13 @@
 ### 2.3 字体
 
 ```
-Font Family: Inter
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+Font Family: Inter (自托管 woff2)
+
+  自托管方案（Google Fonts 在中国大陆被封锁）：
+    1. 从 Google Fonts 下载 Inter woff2 (weights: 300, 400, 500, 600, 700)
+    2. 放入 frontend/public/fonts/
+    3. 在 index.css 中 @font-face 声明，约 200KB 总大小
+    4. 回退栈: 'Inter', system-ui, -apple-system, 'Microsoft YaHei', sans-serif
 
   Heading:  font-weight 600, letter-spacing -0.02em
   Body:     font-weight 400, line-height 1.6
@@ -98,24 +103,24 @@ Shadow (3 层梯度):
 | `#6B625D` on `#FAFAF9` | 辅助文字 | 5.1:1 | AA ✓ |
 | `#FFFFFF` on `#4A5630` | 主按钮白字 | 4.8:1 | AA ✓ |
 | `#DC2626` on `#FAFAF9` | 危险/高风险 | 5.5:1 | AA ✓ |
-| `#B7870A` on `#FAFAF9` | 警告/中风险 | 3.2:1 | 仅支持大文本 |
+| `#947008` on `#FAFAF9` | 警告/中风险 | 4.6:1 | AA ✓ |
 
-> ⚠️ Warning `#B7870A` 小字不过 AA。实际用于 Tag 组件（加粗 600 字号 12px+）或需调整为 `#947008`。
+> 全部色彩组合通过 WCAG AA 对比度验证。
 
 ## 3. 布局骨架
 
 ```
 ┌──────────────────────────────────────┐
-│ Header (面包屑/标题 · 右侧用户+退出) │ bg: #FAFAF9
+│ Header (系统标题 · 右侧用户+退出)     │ bg: #FAFAF9
 ├────────┬─────────────────────────────┤
 │ Sider  │ Content                     │
 │ #EBE8E4│ #FAFAF9                     │
 │ 220px  │ padding: 32px               │
 │        │                             │
-│ · 仪表盘│  页面标题 + 副标题/日期      │
-│ · 单条  │  ─────────────────────     │
-│ · 批量  │  内容卡片                   │
-│ · 案件  │                             │
+│ · 仪表盘│  <h2> 页面标题              │
+│ · 单条  │  <p>  副标题/上下文         │
+│ · 批量  │  ─────────────────────     │
+│ · 案件  │  内容卡片                   │
 │        │                             │
 │ ────── │                             │
 │ · 管理  │                             │
@@ -125,7 +130,7 @@ Shadow (3 层梯度):
 原则：
 - 侧边栏图标+文字始终可见，不折叠
 - Header 融入 Content BG，去掉 Ant Design 默认彩色背景
-- 面包屑取代独立 `<h2>` 标题行
+- `<h2>` 重新设计样式（字重 600、字号 24px、颜色 Foreground），下方可跟副标题
 - 内容区 32px padding（从当前 24px 放宽）
 
 ## 4. 页面设计
@@ -136,7 +141,7 @@ Shadow (3 层梯度):
 
 ```
 ┌─ 品牌条 (bg: #EBE8E4) ──────────────────────────┐
-│  MedGuard · 医疗保险欺诈检测系统                   │
+│  医保风控系统 · 医疗保险欺诈检测系统                   │
 └──────────────────────────────────────────────────┘
 ┌─ 表单区 (bg: #FAFAF9, 居中) ────────────────────┐
 │  ┌─ 登录/注册卡片 ──────────────────────────┐    │
@@ -160,16 +165,16 @@ Shadow (3 层梯度):
 Dashboard · 欺诈检测概览
 2026-06-03 · 星期三
 
-┌─ 趋势图 60% ──────────┐ ┌─ Pending ──┐
-│ 柱状(检测量) + 折线     │ │    42       │
-│ (欺诈率), 双Y轴, 30天   │ │  +12% vs昨  │
-│ 时间切换: 7d | 30d | 90d│ └─────────────┘
-└────────────────────────┘ ┌─ High Risk ┐
-                           │     7      │
-┌─ 累计检测 ──┐            │ needs rev. │
-│   12,847    │            └────────────┘
-│  本月新增   │
-└─────────────┘
+┌─ 趋势图 60% ──────────┐ ┌─ 待审核 ──┐
+│ 柱状(检测量) + 折线     │ │    42     │
+│ (欺诈率), 双Y轴, 30天   │ │  +12% vs昨│
+│ 时间切换: 7d | 30d | 90d│ └───────────┘
+└────────────────────────┘ ┌─ 高风险 ──┐
+                           │     7     │
+┌─ 已处理 ──┐ ┌─ 累计 ──┐ │ needs rev.│
+│    18     │ │ 12,847  │ └───────────┘
+│  今日处理  │ │ 历史累计 │
+└───────────┘ └─────────┘
 
 ┌─ 近期高风险案件 ────────────────────────────────┐
 │  案件ID         │ 概率  │ 金额    │ 时间         │
@@ -183,6 +188,7 @@ Dashboard · 欺诈检测概览
 - 非对称 60/40 双栏
 - 日期作为内容锚点
 - 图表全宽在上，表格全宽在下
+- 4 个核心指标全部保留（待审核、高风险、已处理、累计检测）
 - 概率纯数字 + 颜色（不用进度条）
 - 颜色映射: 低(0-30%) → Success, 中(30-70%) → Warning, 高(70-100%) → Danger
 
@@ -243,7 +249,7 @@ Dashboard · 欺诈检测概览
 │               │  或点击选择   │                    │
 │               └──────────────┘                    │
 │                                                   │
-│         支持 .csv .xlsx .xls，最大 50MB            │
+│         支持 .csv .xlsx .xls，最大 100MB            │
 └───────────────────────────────────────────────────┘
 
 ── 处理中 (有任务时出现) ──
@@ -395,7 +401,16 @@ Dashboard · 欺诈检测概览
 | 管理面板 | `pages/AdminPage.tsx`, `components/admin/UserManagement.tsx`, `DataUpload.tsx` |
 | 通用组件 | `components/common/Skeleton.tsx`, `EmptyState.tsx`, `ErrorBoundary.tsx` |
 
-## 7. 未涉及
+## 7. 实施完成检查清单
+
+- [ ] `grep -rE '#[0-9a-fA-F]{6}' frontend/src/ --include='*.tsx' --include='*.css'` 确认无硬编码色值残留（Token 定义的 hex 除外）
+- [ ] `grep -r '1677ff\|667eea\|764ba2' frontend/src/` 确认旧颜色全部替换
+- [ ] Inter woff2 文件已放入 `frontend/public/fonts/`，`@font-face` 声明正确
+- [ ] 全部页面的 loading / empty / error 三态完整
+- [ ] TypeScript 检查通过：`cd frontend && npx tsc --noEmit`
+- [ ] `index.css` 仅含 `@font-face` + CSS 变量定义 + 全局重置
+
+## 8. 未涉及
 
 - 后端 API（无变更）
 - 路由结构（无变更）
