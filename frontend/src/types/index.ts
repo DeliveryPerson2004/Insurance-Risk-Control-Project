@@ -246,3 +246,16 @@ export interface CaseStatsSummary {
   by_risk_level: Record<string, number>;
   by_manual_result: Record<string, number>;
 }
+
+// ---- 管理面板 ----
+export interface UpdateUserRequest {
+  user_role: 'admin' | 'reviewer';
+  is_active: boolean;
+}
+
+export interface UserListResponse {
+  items: User[];
+  total: number;
+  page: number;
+  size: number;
+}
