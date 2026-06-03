@@ -357,7 +357,7 @@ celery-worker ──→ postgres:5432
 - `docker-compose.yml` 完整拓扑（+ celery-worker 服务）
 - 端到端验证：`docker compose up` → 所有功能可用
 
-### Phase 4: 管理面板 + 打磨
+### Phase 4: 管理面板 + 打磨 ✅ 已完成
 
 > 注：原计划 4.1 模型监控已取消。当前只有一个静态推理模型，无 ground truth 标注、无多版本对比、无漂移检测管线，模型监控不具备实施条件。模型关键指标（AUC/F1/阈值等）已记录在 `model_info` 表和 `docs/modeling/report.md` 中。
 
