@@ -62,7 +62,7 @@ class PredictSingleRequest(BaseModel):
 
 class ShapItem(BaseModel):
     feature: str
-    value: float
+    value: float | str  # 类别特征的值为字符串（如 "BLOOD"），连续特征为 float
     shap_value: float
     direction: str  # "+" 或 "-"
 
