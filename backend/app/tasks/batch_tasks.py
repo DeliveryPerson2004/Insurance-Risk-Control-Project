@@ -136,8 +136,6 @@ async def _process_rows(df: pd.DataFrame, task_id: str, total: int) -> list[dict
 
                 # Run 7-step pipeline
                 X = feature_transform.transform_single(feature_dict)
-                # transform_single 返回 params 顺序，模型要求不同顺序，需显式重排
-                X = X[model_service.get_feature_cols()]
                 result = model_service.predict(X)
 
                 # Persist

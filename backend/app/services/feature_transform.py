@@ -181,5 +181,13 @@ def transform_single(feature_dict: dict[str, Any]) -> pd.DataFrame:
             if std > 0:
                 df[col] = (df[col] - mean) / std
 
-    # 6) 确保 final 列序（输入已验证完整，直接按 FEATURE_COLS 排列）
-    return df[FEATURE_COLS]
+    # 6) 确保 final 列序与模型期望一致（防御性对齐，防止 JSON 配置漂移）
+    from backend.app.services import model_service
+    model_cols = model_service.get_feature_cols()
+    if list(df.columns) != model_cols:
+        logger.warning(
+            "transform_single: 列序与模型不一致，自动重排。"
+            "请检查 preprocess_params.json 的 feature_cols。"
+        )
+        return df[model_cols]
+    return df
