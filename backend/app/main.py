@@ -76,6 +76,10 @@ def create_app() -> FastAPI:
     from backend.app.routers.agent import router as agent_router
     app.include_router(agent_router)
 
+    # 注册 admin 路由（Phase 4）
+    from backend.app.routers.admin import router as admin_router
+    app.include_router(admin_router)
+
     @app.get("/api/health")
     async def health():
         return {"code": 0, "data": {"status": "ok"}, "message": "ok"}
