@@ -31,12 +31,24 @@ export default function BatchUpload({ onUpload, disabled }: Props) {
   };
 
   return (
-    <Dragger {...props}>
+    <Dragger
+      {...props}
+      style={{
+        border: '2px dashed #D6D3D0',
+        borderRadius: 6,
+        background: '#FAFAF9',
+        padding: '32px 24px',
+      }}
+    >
       <p className="ant-upload-drag-icon">
-        <InboxOutlined />
+        <InboxOutlined style={{ color: '#A8A29E', fontSize: 32 }} />
       </p>
-      <p className="ant-upload-text">点击或拖拽 CSV/Excel 文件到此处上传</p>
-      <p className="ant-upload-hint">支持 .csv / .xlsx / .xls 格式，最大 10,000 条</p>
+      <p style={{ color: '#44403C', fontSize: 14, marginBottom: 4, fontWeight: 500 }}>
+        点击或拖拽 CSV/Excel 文件到此处上传
+      </p>
+      <p style={{ color: '#A8A29E', fontSize: 12, margin: 0 }}>
+        支持 .csv / .xlsx / .xls 格式，最大 100MB
+      </p>
     </Dragger>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Card, Table, Tag, Typography, message } from 'antd';
+import { Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import BatchUpload from '../components/batch/BatchUpload';
 import BatchProgress from '../components/batch/BatchProgress';
@@ -12,8 +12,6 @@ import {
 import type { BatchTaskStatus, BatchTaskItem } from '../types';
 import EmptyState from '../components/common/EmptyState';
 import { TableSkeleton } from '../components/common/Skeleton';
-
-const { Title } = Typography;
 
 export default function BatchPredictPage() {
   const [currentTask, setCurrentTask] = useState<BatchTaskStatus | null>(null);
@@ -156,19 +154,43 @@ export default function BatchPredictPage() {
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 24 }}>批量预测</Title>
+      <h2>批量预测</h2>
+      <p style={{ color: '#6B625D', fontSize: 13, marginBottom: 24 }}>
+        文件上传 · 支持 CSV / Excel，上传后台异步处理，结果可下载
+      </p>
 
-      <Card style={{ marginBottom: 24 }}>
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E7E5E2',
+        borderRadius: 6,
+        padding: 24,
+        marginBottom: 24,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      }}>
         <BatchUpload onUpload={handleUpload} disabled={loading || currentTask?.status === 'processing'} />
-      </Card>
+      </div>
 
       {currentTask && (
-        <Card style={{ marginBottom: 24 }}>
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E7E5E2',
+          borderRadius: 6,
+          padding: 24,
+          marginBottom: 24,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}>
           <BatchProgress status={currentTask} onDownload={handleDownload} />
-        </Card>
+        </div>
       )}
 
-      <Card title="历史任务">
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E7E5E2',
+        borderRadius: 6,
+        padding: 24,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      }}>
+        <h4>历史任务</h4>
         {listLoading ? (
           <TableSkeleton rows={5} />
         ) : taskList.length === 0 ? (
@@ -182,7 +204,7 @@ export default function BatchPredictPage() {
             size="small"
           />
         )}
-      </Card>
+      </div>
     </div>
   );
 }
