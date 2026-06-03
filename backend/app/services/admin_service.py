@@ -31,7 +31,7 @@ async def list_users(
     result = await db.execute(
         base.order_by(User.created_at.desc()).offset(offset).limit(size)
     )
-    users = list(result.scalars().all())
+    users = result.scalars().all()
 
     return users, total
 
@@ -46,6 +46,9 @@ async def update_user(
     """修改用户角色或状态。operated_by 为操作者 ID，禁止修改自己."""
     if user_id == operated_by:
         raise AppException("不能修改自己的角色或状态", status_code=400)
+
+    if user_role is None and is_active is None:
+        raise AppException("至少需要修改 role 或 is_active 中的一个", status_code=400)
 
     result = await db.execute(select(User).where(User.user_id == user_id))
     user = result.scalar_one_or_none()
