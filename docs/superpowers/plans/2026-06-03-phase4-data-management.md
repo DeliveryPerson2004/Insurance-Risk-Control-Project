@@ -8,6 +8,11 @@
 
 **Tech Stack:** FastAPI + SQLAlchemy 2.0 async + Celery + Redis + pandas + React 18 + TypeScript + Ant Design 5
 
+**注意事项：**
+- API 路径采用 `/api/admin/data/tasks/{task_id}/status`（比设计文档多一层 `/tasks`），与批量预测 `/api/predict/batch/{id}/status` 模式统一
+- Windows 开发环境需设置环境变量 `BATCH_RESULT_DIR`（如 `D:/tmp/batch_results`），否则 `/tmp/` 路径行为不确定
+- Redis `keys("data_task:*")` 在当前任务量级（< 100）下安全，大规模场景需改用 `SCAN`
+
 ---
 
 ### Task 1: 新增预处理 Service
@@ -300,11 +305,9 @@ def process_data_import(self, task_id: str, filepath: str, filename: str):
 
         # 3. 逐行: 特征变换 → 推理 → 入库
         import asyncio
-        loop = asyncio.new_event_loop()
-        results = loop.run_until_complete(
+        results = asyncio.run(
             _process_rows(feature_df, feature_cols, task_id, total)
         )
-        loop.close()
 
         _update_progress(
             task_id,
@@ -440,16 +443,24 @@ async def _process_rows(
 
 - [ ] **Step 2: 修改 celery_app.py**
 
-将 `celery_app.py` 第 11 行的 `include` 从：
+在 `celery_app.py` 的 `include` 列表中追加 `"backend.app.tasks.data_tasks"`：
 
 ```python
-include=["backend.app.tasks.batch_tasks"],
-```
+# 修改前:
+celery_app = Celery(
+    "fraud_detect",
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
+    include=["backend.app.tasks.batch_tasks"],
+)
 
-改为：
-
-```python
-include=["backend.app.tasks.batch_tasks", "backend.app.tasks.data_tasks"],
+# 修改后:
+celery_app = Celery(
+    "fraud_detect",
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
+    include=["backend.app.tasks.batch_tasks", "backend.app.tasks.data_tasks"],
+)
 ```
 
 - [ ] **Step 3: 验证语法**
@@ -607,6 +618,8 @@ async def list_data_tasks(
     from backend.app.utils.redis_utils import _get_redis, redis_get
 
     r = _get_redis()
+    # 注意: r.keys() 是 O(N) 阻塞操作，当前任务量级 (< 100) 下安全
+    # 大规模场景需改用 r.scan_iter("data_task:*")
     keys = [k.decode() for k in r.keys("data_task:*") if b":" in k]
     items = []
     for key in keys:
@@ -642,9 +655,23 @@ async def data_task_status(
     return ok(data)
 ```
 
-导入区域追加：
+在 `admin.py` 顶部导入区域追加 `settings`、`UploadFile`、`File`、`uuid`、`os`：
 
 ```python
+# 已有 imports（保留不变）:
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.database import get_db
+from backend.app.deps import require_admin
+from backend.app.models.user import User
+from backend.app.schemas.admin import UpdateUserRequest, UserOut, UserListResponse
+from backend.app.services import admin_service
+
+# 新增 imports:
+import uuid as _uuid
+import os as _os
+from fastapi import UploadFile, File
 from backend.app.config import settings
 ```
 
@@ -703,6 +730,14 @@ export interface DataTaskListResponse {
 ```typescript
 import type { DataTaskStatus, DataTaskListResponse } from '../types';
 
+export async function fetchDataTasks(params: {
+  page?: number;
+  size?: number;
+}): Promise<DataTaskListResponse> {
+  const res = await client.get<ApiResponse<DataTaskListResponse>>('/admin/data/tasks', { params });
+  return res.data.data;
+}
+
 export async function uploadData(file: File): Promise<{ task_id: string }> {
   const formData = new FormData();
   formData.append('file', file);
@@ -741,14 +776,14 @@ git commit -m "feat: add data management types and API functions"
 - [ ] **Step 1: 创建上传组件**
 
 ```typescript
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Upload, Button, Table, message, Tag, Space, Typography,
 } from 'antd';
 import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { uploadData, fetchDataTaskStatus } from '../../api/admin';
+import { uploadData, fetchDataTasks, fetchDataTaskStatus } from '../../api/admin';
 import type { DataTaskStatus } from '../../types';
 
 const { Dragger } = Upload;
@@ -774,7 +809,7 @@ interface TaskRecord extends DataTaskStatus {
 export default function DataUpload() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [uploading, setUploading] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
 
   const startPolling = useCallback((taskId: string) => {
     const interval = setInterval(async () => {
@@ -797,6 +832,21 @@ export default function DataUpload() {
     }, 5000);
     pollRef.current = interval;
   }, []);
+
+  // 页面加载时恢复已有任务列表
+  useEffect(() => {
+    fetchDataTasks({ page: 1, size: 50 }).then((res) => {
+      setTasks(res.items.map((item) => ({ ...item, key: item.task_id })));
+      // 恢复对进行中任务的轮询
+      for (const item of res.items) {
+        if (item.status === 'pending' || item.status === 'processing') {
+          startPolling(item.task_id);
+        }
+      }
+    }).catch(() => {
+      // Redis 中无历史数据时忽略
+    });
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpload: UploadProps['customRequest'] = useCallback(
     async (options) => {
