@@ -11,6 +11,7 @@ import CaseListPage from './pages/CaseListPage';
 import CaseDetailPage from './pages/CaseDetailPage';
 import AdminPage from './pages/AdminPage';
 import AppLayout from './components/layout/AppLayout';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
@@ -50,7 +51,8 @@ export default function App() {
         }}
       >
         <AntApp>
-          <BrowserRouter>
+          <ErrorBoundary>
+            <BrowserRouter>
             <Routes>
               <Route
                 path="/login"
@@ -78,6 +80,7 @@ export default function App() {
               <Route path="*" element={<div style={{ padding: 48, textAlign: 'center' }}>404</div>} />
             </Routes>
           </BrowserRouter>
+          </ErrorBoundary>
         </AntApp>
       </ConfigProvider>
     </QueryClientProvider>
