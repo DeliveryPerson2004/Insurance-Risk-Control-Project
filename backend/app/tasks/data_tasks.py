@@ -13,9 +13,6 @@ from backend.app.config import settings
 
 logger = logging.getLogger(__name__)
 
-UPLOAD_DIR = os.path.join(settings.BATCH_RESULT_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 def _update_progress(task_id: str, **kwargs):
     from backend.app.utils.redis_utils import redis_get, redis_set
@@ -56,11 +53,15 @@ def process_data_import(self, task_id: str, filepath: str, filename: str):
             _process_rows(feature_df, feature_cols, task_id, total)
         )
 
-        _update_progress(
-            task_id,
-            status="completed",
-            completed_at=_dt.now().isoformat(),
-        )
+        # 仅在 _process_rows 未设失败状态时覆盖为 completed
+        from backend.app.utils.redis_utils import redis_get
+        current = redis_get(f"data_task:{task_id}") or {}
+        if current.get("status") != "failed":
+            _update_progress(
+                task_id,
+                status="completed",
+                completed_at=_dt.now().isoformat(),
+            )
         return results
 
     except Exception as e:
@@ -111,6 +112,8 @@ async def _process_rows(
         if model_id is None:
             _update_progress(task_id, status="failed", error_message="No active model")
             return {"success": 0, "failed": 0}
+
+        threshold = model_service.get_threshold()
 
         for idx, (_, row) in enumerate(feature_df.iterrows()):
             try:
@@ -167,7 +170,7 @@ async def _process_rows(
                     fraud_prob=result["fraud_prob"],
                     raw_prob=result["raw_prob"],
                     risk_level=result["risk_level"],
-                    threshold_used=model_service.get_threshold(),
+                    threshold_used=threshold,
                     feature_values=feature_dict,
                     shap_values={
                         item["feature"]: item["shap_value"]
