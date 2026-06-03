@@ -48,7 +48,7 @@ export default function RiskTrendChart() {
       .encode('x', 'date')
       .encode('y', 'total')
       .axis('y', { title: '检测量' })
-      .style('fill', '#1677ff');
+      .style('fill', '#4A5630');
 
     // Right Y: line for fraud rate
     chart
@@ -61,7 +61,7 @@ export default function RiskTrendChart() {
         title: '欺诈率',
         labelFormatter: (v: number) => `${(v * 100).toFixed(0)}%`,
       })
-      .style('stroke', '#ff4d4f')
+      .style('stroke', '#DC2626')
       .style('lineWidth', 2);
 
     chart.render();
@@ -76,7 +76,7 @@ export default function RiskTrendChart() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <span style={{ fontWeight: 600, fontSize: 14, color: '#666' }}>检测量 & 欺诈率趋势</span>
+        <span style={{ fontWeight: 600, fontSize: 14, color: '#292524' }}>检测量 & 欺诈率趋势</span>
         <Space>
           {[7, 30, 90].map((d) => (
             <Button
