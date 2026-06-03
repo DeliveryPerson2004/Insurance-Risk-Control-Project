@@ -145,6 +145,34 @@
 
 ---
 
-## 模块 3（后续设计）
+## 模块 3: 打磨
 
-模块 3（打磨）将在数据管理完成后细化设计。
+### 已完成（无需改动）
+
+- **全局异常处理**: 后端 `main.py` 注册 4 种异常处理器（AppException / HTTPException / ValidationError / Exception）
+- **路由守卫**: 前端 `ProtectedRoute`（登录检查）+ `AdminRoute`（admin 角色检查）
+- **ConfigProvider 主题**: `colorPrimary: '#1677ff'` 已配置
+
+### 新增
+
+**3 个共用组件** (`frontend/src/components/common/`):
+
+| 组件 | 功能 | 技术 |
+|------|------|------|
+| `ErrorBoundary` | React class component，`componentDidCatch` 捕获子组件崩溃，展示 `Result` + 刷新按钮 | antd `Result` |
+| `EmptyState` | 封装 antd `Empty`，接受 `description`/`icon`/`action` props | antd `Empty` |
+| `Skeleton` | 预置模板: `TableSkeleton`（模拟表格行）、`CardSkeleton`（模拟卡片）、`DetailSkeleton`（模拟详情） | antd `Skeleton` |
+
+**接入范围**:
+
+- `App.tsx`: `<ErrorBoundary>` 包裹路由
+- `DashboardPage`: `CardSkeleton` 替换 Spin 加载
+- `CaseListPage`: `TableSkeleton` + `EmptyState`（"暂无案件"）
+- `CaseDetailPage`: `DetailSkeleton`
+- `BatchPredictPage`: `TableSkeleton` + `EmptyState`（"暂无任务"）
+- `AdminPage` / `UserManagement`: `TableSkeleton` + `EmptyState`（"暂无用户"）
+
+### 不做
+
+- 浏览器兼容 polyfill（演示环境可控）
+- 前端 axios 拦截器全局错误 toast（已有 `message.error` 逐处处理）
