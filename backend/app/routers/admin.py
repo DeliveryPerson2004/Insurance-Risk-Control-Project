@@ -16,6 +16,8 @@ from backend.app.config import settings
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+# 注: 暂复用 BATCH_RESULT_DIR 作为上传目录父路径。文件为临时存储，
+# Celery 任务完成后自动清理，生产环境建议独立配置 DATA_UPLOAD_DIR。
 UPLOAD_DIR = _os.path.join(settings.BATCH_RESULT_DIR, "uploads")
 _os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -114,9 +116,7 @@ async def list_data_tasks(
     from backend.app.utils.redis_utils import _get_redis, redis_get
 
     r = _get_redis()
-    # 注意: r.keys() 是 O(N) 阻塞操作，当前任务量级 (< 100) 下安全
-    # 大规模场景需改用 r.scan_iter("data_task:*")
-    keys = [k.decode() for k in r.keys("data_task:*") if b":" in k]
+    keys = [k.decode() for k in r.scan_iter("data_task:*") if b":" in k]
     items = []
     for key in keys:
         data = redis_get(key)

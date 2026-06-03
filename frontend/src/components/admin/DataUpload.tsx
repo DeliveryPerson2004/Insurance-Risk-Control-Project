@@ -31,9 +31,13 @@ interface TaskRecord extends DataTaskStatus {
 export default function DataUpload() {
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [uploading, setUploading] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  // Map 管理多个并发轮询（每个进行中的任务一个 interval），避免单 ref 泄漏
+  const pollMapRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
   const startPolling = useCallback((taskId: string) => {
+    // 已有轮询则跳过，避免重复
+    if (pollMapRef.current.has(taskId)) return;
+
     const interval = setInterval(async () => {
       try {
         const status = await fetchDataTaskStatus(taskId);
@@ -42,6 +46,7 @@ export default function DataUpload() {
         );
         if (status.status === 'completed' || status.status === 'failed') {
           clearInterval(interval);
+          pollMapRef.current.delete(taskId);
           if (status.status === 'completed') {
             message.success(`文件 ${status.filename} 导入完成: ${status.success} 条成功`);
           } else {
@@ -52,14 +57,13 @@ export default function DataUpload() {
         // status not yet available
       }
     }, 5000);
-    pollRef.current = interval;
+    pollMapRef.current.set(taskId, interval);
   }, []);
 
   // 页面加载时恢复已有任务列表
   useEffect(() => {
     fetchDataTasks({ page: 1, size: 50 }).then((res) => {
       setTasks(res.items.map((item) => ({ ...item, key: item.task_id })));
-      // 恢复对进行中任务的轮询
       for (const item of res.items) {
         if (item.status === 'pending' || item.status === 'processing') {
           startPolling(item.task_id);
@@ -68,6 +72,12 @@ export default function DataUpload() {
     }).catch(() => {
       // Redis 中无历史数据时忽略
     });
+
+    // 组件卸载时清理所有 interval
+    return () => {
+      pollMapRef.current.forEach((interval) => clearInterval(interval));
+      pollMapRef.current.clear();
+    };
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpload: UploadProps['customRequest'] = useCallback(

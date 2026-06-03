@@ -43,10 +43,11 @@ AMOUNT_COLS = [
 
 
 def preprocess_raw_excel(df: pd.DataFrame) -> pd.DataFrame:
-    """将原始 108 列 DataFrame 转换为 35 特征 DataFrame.
+    """将原始 108 列 DataFrame 转换为 30 特征 DataFrame.
 
     入参 df 由调用方从 Excel 读入，列名已标准化（strip + uppercase）。
-    返回的 DataFrame 包含 35 个特征列，值为原始值（未经 winsor/log/scaler）。
+    返回的 DataFrame 包含 30 个特征列（7 类别 + 23 连续），值为原始值。
+    5 个 _MISSING 标记列由下游 feature_transform.py 补齐到 35。
     """
 
     # ---- 1. 金额列清洗 ----

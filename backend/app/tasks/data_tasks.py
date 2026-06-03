@@ -48,6 +48,9 @@ def process_data_import(self, task_id: str, filepath: str, filename: str):
         _update_progress(task_id, step="inference")
 
         # 3. 逐行: 特征变换 → 推理 → 入库
+        # 注意: asyncio.run() 的前提是当前线程无运行中的事件循环。
+        # Celery prefork/solo pool 满足此条件。若改用 gevent/eventlet pool，
+        # 需改为 loop.run_until_complete() 或使用 asgiref 的 async_to_sync。
         import asyncio
         results = asyncio.run(
             _process_rows(feature_df, feature_cols, task_id, total)
@@ -116,8 +119,19 @@ async def _process_rows(
         threshold = model_service.get_threshold()
 
         for idx, (_, row) in enumerate(feature_df.iterrows()):
+            # savepoint 隔离：失败行不影响已成功的行
+            await db.begin_nested()
             try:
-                # Build feature dict from 30 preprocessed columns
+                # Step A: 先计算 _MISSING 标记（基于原始 NaN，填充前）
+                missing_flags = {}
+                for mc in missing_cols:
+                    base_col = mc.replace("_MISSING", "")
+                    if base_col in feature_cols:
+                        missing_flags[mc] = 1 if pd.isna(row[base_col]) else 0
+                    else:
+                        missing_flags[mc] = 0
+
+                # Step B: 填充 NaN → 构建 feature_dict
                 feature_dict = {}
                 for col in feature_cols:
                     val = row[col]
@@ -128,19 +142,16 @@ async def _process_rows(
                     else:
                         feature_dict[col] = float(val)
 
-                # 补齐 _MISSING 标记列（transform_single 要求完整 35 特征）
-                for mc in missing_cols:
-                    base_col = mc.replace("_MISSING", "")
-                    if base_col in feature_dict:
-                        feature_dict[mc] = 1 if pd.isna(row[base_col]) else 0
-                    else:
-                        feature_dict[mc] = 0
+                # 合并 _MISSING 标记
+                feature_dict.update(missing_flags)
 
                 # 7-step transform → model inference
                 X = feature_transform.transform_single(feature_dict)
                 result = model_service.predict(X)
 
                 # Persist
+                # 注: 原始 Excel 无被保人人口学字段（age/gender/occupation），
+                # 仅填充 insuree_id，其余为 NULL。claim_times 可后续从 MBR_CLAIM_COUNT 回填。
                 insuree = Insuree(
                     insuree_id=_uuid.uuid4().hex,
                 )
@@ -185,6 +196,7 @@ async def _process_rows(
 
             except Exception as e:
                 logger.warning("Row %d failed: %s", idx, str(e))
+                await db.rollback()  # 仅回滚当前 savepoint，不影响已提交的行
                 failed += 1
 
             if (idx + 1) % 100 == 0:
