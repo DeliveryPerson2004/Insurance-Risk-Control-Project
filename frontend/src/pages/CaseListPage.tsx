@@ -8,6 +8,7 @@ import {
   Col,
   Typography,
   Space,
+  message,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import CaseTable from '../components/cases/CaseTable';
@@ -55,6 +56,8 @@ export default function CaseListPage() {
       });
       setData(res.items);
       setTotal(res.total);
+    } catch {
+      message.error('加载案件列表失败');
     } finally {
       setLoading(false);
     }

@@ -38,9 +38,11 @@ export default function DataUpload() {
     // 已有轮询则跳过，避免重复
     if (pollMapRef.current.has(taskId)) return;
 
+    let failCount = 0;
     const interval = setInterval(async () => {
       try {
         const status = await fetchDataTaskStatus(taskId);
+        failCount = 0;  // 成功后重置
         setTasks((prev) =>
           prev.map((t) => (t.key === taskId ? { ...status, key: taskId } : t))
         );
@@ -54,7 +56,13 @@ export default function DataUpload() {
           }
         }
       } catch {
-        // status not yet available
+        failCount++;
+        // 连续失败 12 次（约 1 分钟）后停止轮询
+        if (failCount >= 12) {
+          clearInterval(interval);
+          pollMapRef.current.delete(taskId);
+          message.warning(`任务 ${taskId} 状态查询超时，请刷新页面查看`);
+        }
       }
     }, 5000);
     pollMapRef.current.set(taskId, interval);

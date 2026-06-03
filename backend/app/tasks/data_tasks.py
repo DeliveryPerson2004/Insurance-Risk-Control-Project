@@ -108,7 +108,7 @@ async def _process_rows(
 
     async with async_session() as db:
         model_result = await db.execute(
-            select(ModelInfo.model_id).where(ModelInfo.is_active == True).limit(1)
+            select(ModelInfo.model_id).where(ModelInfo.is_active.is_(True)).limit(1)
         )
         model_id = model_result.scalar_one_or_none()
 
@@ -120,7 +120,7 @@ async def _process_rows(
 
         for idx, (_, row) in enumerate(feature_df.iterrows()):
             # savepoint 隔离：失败行不影响已成功的行
-            await db.begin_nested()
+            savepoint = await db.begin_nested()
             try:
                 # Step A: 先计算 _MISSING 标记（基于原始 NaN，填充前）
                 missing_flags = {}
@@ -196,7 +196,7 @@ async def _process_rows(
 
             except Exception as e:
                 logger.warning("Row %d failed: %s", idx, str(e))
-                await db.rollback()  # 仅回滚当前 savepoint，不影响已提交的行
+                await savepoint.rollback()  # 仅回滚当前 savepoint，不影响已成功的行
                 failed += 1
 
             if (idx + 1) % 100 == 0:

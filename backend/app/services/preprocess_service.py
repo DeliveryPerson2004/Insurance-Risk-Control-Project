@@ -18,7 +18,7 @@ from backend.app.utils.exceptions import AppException
 
 logger = logging.getLogger(__name__)
 
-# 35 特征列（与模型训练时的 FEATURE_COLS 一致）
+# 30 特征列（7 类别 + 23 连续），下游 feature_transform.py 补齐 5 个 _MISSING 到 35
 CATEGORICAL = [
     'ICD10_CHAPTER', 'BH_PREFIX', 'BH_CATEGORY',
     'MBR_TYPE', 'BEN_TYPE', 'KIND_CODE', 'POCY_PLAN_DESC',
