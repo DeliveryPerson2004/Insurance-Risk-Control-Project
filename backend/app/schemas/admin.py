@@ -1,12 +1,20 @@
 """管理面板相关 Pydantic v2 schemas."""
 
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from backend.app.models.user import UserRole
 
 
 class UpdateUserRequest(BaseModel):
-    user_role: str = Field(..., pattern="^(admin|reviewer)$")
+    user_role: UserRole
     is_active: bool
+
+
+# 注意: UserOut 与 auth.UserResponse 字段相似但语义独立。
+# UserResponse 用于认证响应，UserOut 用于管理面板用户列表。
+# 随着 Phase 4 推进，管理视图可能需要额外字段（如 updated_at），
+# 两者分开定义以便独立演化。
 
 
 class UserOut(BaseModel):
