@@ -52,7 +52,105 @@ export default function App() {
         locale={zhCN}
         theme={{
           token: {
-            colorPrimary: '#1677ff',
+            // 品牌色
+            colorPrimary: '#4A5630',
+            colorPrimaryHover: '#3B4526',
+            colorPrimaryActive: '#3B4526',
+            colorPrimaryBg: '#EDF0E7',
+            colorPrimaryBgHover: '#E3E7DA',
+            // 中性色
+            colorText: '#292524',
+            colorTextSecondary: '#44403C',
+            colorTextTertiary: '#6B625D',
+            colorTextQuaternary: '#A8A29E',
+            colorBorder: '#E7E5E2',
+            colorBorderSecondary: '#D6D3D0',
+            colorFill: '#E7E5E2',
+            colorFillSecondary: '#EDF0E7',
+            colorFillTertiary: '#F5F3F0',
+            colorFillQuaternary: '#FAFAF9',
+            // 背景
+            colorBgContainer: '#FFFFFF',
+            colorBgElevated: '#FFFFFF',
+            colorBgLayout: '#FAFAF9',
+            colorBgSpotlight: '#292524',
+            // 语义色
+            colorSuccess: '#4A5630',
+            colorWarning: '#947008',
+            colorError: '#DC2626',
+            colorInfo: '#6B625D',
+            colorSuccessBg: '#F2F7ED',
+            colorWarningBg: '#FFF8EB',
+            colorErrorBg: '#FEF2F2',
+            colorInfoBg: '#EDF0E7',
+            colorSuccessBorder: '#4A5630',
+            colorWarningBorder: '#947008',
+            colorErrorBorder: '#DC2626',
+            // 字体
+            fontFamily: "'Inter', system-ui, -apple-system, 'Microsoft YaHei', sans-serif",
+            fontSize: 14,
+            fontSizeHeading1: 32,
+            fontSizeHeading2: 24,
+            fontSizeHeading3: 18,
+            fontSizeHeading4: 16,
+            fontSizeHeading5: 14,
+            lineHeight: 1.6,
+            // 圆角
+            borderRadius: 6,
+            borderRadiusLG: 8,
+            borderRadiusSM: 4,
+            // 阴影
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+            boxShadowSecondary: '0 4px 12px rgba(0,0,0,0.08)',
+            // 间距
+            padding: 16,
+            paddingLG: 24,
+            paddingXS: 8,
+            margin: 16,
+            marginLG: 24,
+            // 其他
+            controlHeight: 36,
+            controlHeightLG: 44,
+            wireframe: false,
+          },
+          components: {
+            Layout: {
+              bodyBg: '#FAFAF9',
+              headerBg: '#FAFAF9',
+              siderBg: '#EBE8E4',
+              triggerBg: '#EBE8E4',
+              triggerColor: '#44403C',
+            },
+            Menu: {
+              itemBg: 'transparent',
+              itemColor: '#44403C',
+              itemHoverBg: '#D6D3D0',
+              itemSelectedBg: '#EDF0E7',
+              itemSelectedColor: '#4A5630',
+              subMenuItemBg: 'transparent',
+            },
+            Card: {
+              paddingLG: 24,
+            },
+            Table: {
+              headerBg: '#FAFAF9',
+              headerColor: '#6B625D',
+              rowHoverBg: '#EDF0E7',
+              borderColor: '#E7E5E2',
+            },
+            Tag: {
+              defaultBg: '#F5F3F0',
+              defaultColor: '#44403C',
+            },
+            Tabs: {
+              inkBarColor: '#4A5630',
+              itemActiveColor: '#4A5630',
+              itemHoverColor: '#3B4526',
+              itemSelectedColor: '#4A5630',
+            },
+            Modal: {
+              boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+            },
           },
         }}
       >
