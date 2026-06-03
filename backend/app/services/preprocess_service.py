@@ -1,10 +1,13 @@
-"""原始 Excel (108列) → 35 特征 DataFrame (原始值，未缩放).
+"""原始 Excel (108列) → 30 特征 DataFrame (原始值，未缩放).
 
 从 data/preprocessing.py 提取核心逻辑，去掉：
   - FRAUD 标签计算
   - train/eval/test 切分
   - winsor / log1p / StandardScaler（feature_transform.py 负责）
   - category dtype 转换（feature_transform.py 负责）
+  - 缺失值标记 *_MISSING（feature_transform.py 的 transform_single 动态生成）
+
+输出 30 列原始特征，下游由 feature_transform.py 完成剩余的 35 列变换。
 """
 
 import logging
@@ -158,9 +161,9 @@ def preprocess_raw_excel(df: pd.DataFrame) -> pd.DataFrame:
             .replace(['NAN', 'NONE', 'NULL', ''], 'UNKNOWN')
         )
 
-    # ---- 7. 数值列转换 ----
+    # ---- 7. 数值列转换（SUB_AMT/TOTAL_RECEIPT_AMT 已在 step 1 转换，此处跳过） ----
     for col in ['NO_OF_YR', 'POLICY_CNT', 'INVOICE_CNT', 'COPAY_PCT',
-                'SUB_AMT', 'TOTAL_RECEIPT_AMT', 'ORG_PRES_AMT_VALUE']:
+                'ORG_PRES_AMT_VALUE']:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
 
