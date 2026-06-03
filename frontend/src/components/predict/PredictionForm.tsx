@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Form, Select, InputNumber, Input, Button, Collapse, Steps, message, Spin,
-} from 'antd';
+import { Form, Select, InputNumber, Input, Button, message, Spin, Row, Col } from 'antd';
 import type { FieldOption } from '../../types';
 import { getFieldOptions } from '../../api/predict';
 
@@ -10,15 +8,11 @@ interface Props {
   loading: boolean;
 }
 
-type ViewMode = 'collapse' | 'steps';
-
 export default function PredictionForm({ onResult, loading }: Props) {
   const [form] = Form.useForm();
   const [fields, setFields] = useState<FieldOption[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('collapse');
   const [fetching, setFetching] = useState(true);
-  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     getFieldOptions()
@@ -36,7 +30,6 @@ export default function PredictionForm({ onResult, loading }: Props) {
   );
 
   const renderField = (field: FieldOption) => {
-    // 规范化选项：支持旧格式 string[] 和新格式 {value, label}[]
     const normOptions = (field.options || []).map((o) =>
       typeof o === 'string' ? { value: o, label: o } : o,
     );
@@ -46,40 +39,24 @@ export default function PredictionForm({ onResult, loading }: Props) {
         <Form.Item
           key={field.name}
           name={field.name}
-          label={field.label}
+          label={<span style={{ fontSize: 12, color: '#6B625D' }}>{field.label}</span>}
           rules={[{ required: field.required, message: `请选择${field.label}` }]}
         >
           <Select
             showSearch
             placeholder={field.placeholder || `请选择${field.label}`}
             options={normOptions}
-            dropdownMatchSelectWidth={false}
-            popupMatchSelectWidth={false}
-            style={{ minWidth: 180 }}
           />
         </Form.Item>
       );
     }
 
-    if (field.type === 'text') {
-      return (
-        <Form.Item
-          key={field.name}
-          name={field.name}
-          label={field.label}
-          rules={[{ required: field.required, message: `请输入${field.label}` }]}
-          extra={field.hint}
-        >
-          <Input placeholder={field.placeholder || `请输入${field.label}`} allowClear />
-        </Form.Item>
-      );
-    }
-
+    // field.type === 'number' — InputNumber
     return (
       <Form.Item
         key={field.name}
         name={field.name}
-        label={field.label}
+        label={<span style={{ fontSize: 12, color: '#6B625D' }}>{field.label}</span>}
         rules={[{ required: field.required, message: `请输入${field.label}` }]}
       >
         <InputNumber
@@ -97,120 +74,60 @@ export default function PredictionForm({ onResult, loading }: Props) {
     return <Spin tip="加载字段配置..." style={{ display: 'block', textAlign: 'center', padding: 48 }} />;
   }
 
-  // 向导步骤
-  const stepItems = [
-    { title: '诊断+金额', groups: ['诊断信息', '金额信息'] },
-    { title: '保单+时间', groups: ['保单信息', '时间特征'] },
-    { title: '画像+医院', groups: ['被保险人画像', '医院信息'] },
-    { title: '确认提交', groups: [] as string[] },
-  ];
-
   return (
-    <div>
-      {/* 模式切换 */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16, gap: 8 }}>
-        <Button
-          size="small"
-          type={viewMode === 'collapse' ? 'primary' : 'default'}
-          onClick={() => setViewMode('collapse')}
-        >
-          折叠面板
-        </Button>
-        <Button
-          size="small"
-          type={viewMode === 'steps' ? 'primary' : 'default'}
-          onClick={() => setViewMode('steps')}
-        >
-          向导
-        </Button>
-      </div>
-
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={(values) => onResult(values)}
-      >
-        {/* insuree_id */}
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={(values) => onResult(values)}
+    >
+      {/* 被保险人 ID — 全宽 */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E7E5E2',
+        borderRadius: 6,
+        padding: '16px 24px',
+        marginBottom: 16,
+      }}>
         <Form.Item
           name="insuree_id"
-          label="被保险人 ID"
+          label={<span style={{ fontSize: 12, color: '#6B625D' }}>被保险人 ID</span>}
           rules={[{ required: true, message: '请输入被保险人 ID' }]}
+          style={{ marginBottom: 0 }}
         >
           <Input placeholder="请输入被保险人 ID" />
         </Form.Item>
+      </div>
 
-        {viewMode === 'collapse' ? (
-          <Collapse
-            defaultActiveKey={[groups[0]]}
-            items={groups.map((group) => ({
-              key: group,
-              label: `${group} (${getFieldsByGroup(group).length} 字段)`,
-              children: (
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  {getFieldsByGroup(group).map(renderField)}
-                </div>
-              ),
-            }))}
-          />
-        ) : (
-          <div>
-            <Steps
-              current={currentStep}
-              size="small"
-              style={{ marginBottom: 24 }}
-              onChange={setCurrentStep}
-              items={stepItems.map((s) => ({ title: s.title }))}
-            />
-            {currentStep < 3 ? (
-              <>
-                {stepItems[currentStep].groups.map((group) => (
-                  <div key={group} style={{ marginBottom: 16 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{group}</div>
-                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      {getFieldsByGroup(group).map(renderField)}
-                    </div>
-                  </div>
-                ))}
-                <div style={{ textAlign: 'right', marginTop: 16 }}>
-                  <Button type="primary" onClick={async () => {
-                    try {
-                      const currentFields = stepItems[currentStep].groups
-                        .flatMap((g) => getFieldsByGroup(g).map((f) => f.name));
-                      await form.validateFields(currentFields);
-                      setCurrentStep((s) => Math.min(s + 1, 3));
-                    } catch {
-                      // validation failed, Ant Design will show field errors
-                    }
-                  }}>
-                    下一步
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>
-                  确认提交 — 请检查所有已填写字段
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                  <Button onClick={() => setCurrentStep(2)}>上一步</Button>
-                  <Button type="primary" htmlType="submit" loading={loading}>
-                    提交预测
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      {/* 字段分组 — 2 列网格 */}
+      <Row gutter={[16, 0]}>
+        {groups.map((group) => (
+          <Col span={12} key={group}>
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #E7E5E2',
+              borderRadius: 6,
+              padding: '16px 24px',
+              marginBottom: 16,
+            }}>
+              <h4 style={{ marginBottom: 12 }}>
+                {group}
+                <span style={{ fontWeight: 400, fontSize: 11, color: '#A8A29E', marginLeft: 8 }}>
+                  {getFieldsByGroup(group).length} 字段
+                </span>
+              </h4>
+              {getFieldsByGroup(group).map(renderField)}
+            </div>
+          </Col>
+        ))}
+      </Row>
 
-        {viewMode === 'collapse' && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
-            <Button onClick={() => form.resetFields()}>重置</Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              提交预测
-            </Button>
-          </div>
-        )}
-      </Form>
-    </div>
+      {/* 操作按钮 */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+        <Button onClick={() => form.resetFields()}>重置</Button>
+        <Button type="primary" htmlType="submit" loading={loading}>
+          提交预测
+        </Button>
+      </div>
+    </Form>
   );
 }

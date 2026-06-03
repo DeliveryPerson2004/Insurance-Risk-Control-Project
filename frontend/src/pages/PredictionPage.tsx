@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { message, Row, Col, Card, Button, Input, Tooltip } from 'antd';
+import { message, Card } from 'antd';
 import PredictionForm from '../components/predict/PredictionForm';
 import RiskGauge from '../components/predict/RiskGauge';
 import ShapExplanation from '../components/predict/ShapExplanation';
@@ -26,60 +26,36 @@ export default function PredictionPage() {
   return (
     <div>
       <h2>单条预测</h2>
+      <p style={{ color: '#6B625D', fontSize: 13, marginBottom: 24 }}>
+        理赔风险评估 · 填写以下字段后提交，即刻返回欺诈概率
+      </p>
+
       <PredictionForm onResult={handleSubmit} loading={loading} />
 
       {result && (
-        <Card style={{ marginTop: 24 }}>
-          <div style={{ marginBottom: 16, padding: '8px 12px', background: '#f6f8fa', borderRadius: 6, fontSize: 13 }}>
-            保单号：<strong>{result.policy_id}</strong>
-            <span style={{ color: '#999', marginLeft: 12 }}>
-              （在案件管理搜索此号可查看详情）
-            </span>
+        <Card style={{ marginTop: 24 }} title="预测结果">
+          <div style={{
+            marginBottom: 16,
+            padding: '10px 16px',
+            background: '#F5F3F0',
+            borderRadius: 6,
+            fontSize: 13,
+            color: '#44403C',
+          }}>
+            保单号：<strong style={{ color: '#292524' }}>{result.policy_id}</strong>
           </div>
-          <Row gutter={24} align="top">
-            <Col flex="240px">
+          <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+            <div style={{ flex: '240px 0 0' }}>
               <RiskGauge
                 fraudProb={result.fraud_prob}
                 riskLevel={result.risk_level}
                 threshold={result.threshold_used}
               />
-            </Col>
-            <Col flex="auto">
+            </div>
+            <div style={{ flex: 1 }}>
               <ShapExplanation items={result.shap_top10} />
-            </Col>
-            <Col flex="160px">
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontWeight: 600, marginBottom: 16, color: '#666' }}>审核判定</div>
-                <Tooltip title="功能开发中（Phase 3）">
-                  <Button
-                    type="primary"
-                    disabled
-                    style={{ background: '#52c41a', borderColor: '#52c41a', width: '100%', marginBottom: 8 }}
-                  >
-                    通过
-                  </Button>
-                </Tooltip>
-                <Tooltip title="功能开发中（Phase 3）">
-                  <Button
-                    danger
-                    disabled
-                    style={{ width: '100%', marginBottom: 8 }}
-                  >
-                    拒绝
-                  </Button>
-                </Tooltip>
-                <Tooltip title="功能开发中（Phase 3）">
-                  <Button
-                    disabled
-                    style={{ background: '#faad14', borderColor: '#faad14', color: '#fff', width: '100%', marginBottom: 12 }}
-                  >
-                    待调查
-                  </Button>
-                </Tooltip>
-                <Input.TextArea rows={3} placeholder="备注（可选）" />
-              </div>
-            </Col>
-          </Row>
+            </div>
+          </div>
         </Card>
       )}
     </div>
