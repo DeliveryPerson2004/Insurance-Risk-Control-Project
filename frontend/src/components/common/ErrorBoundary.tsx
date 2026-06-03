@@ -17,6 +17,11 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[ErrorBoundary] Uncaught error:', error.message);
+    console.error('[ErrorBoundary] Component stack:', info.componentStack);
+  }
+
   handleRefresh = () => {
     window.location.reload();
   };
