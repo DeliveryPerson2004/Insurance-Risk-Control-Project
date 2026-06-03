@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  Upload, Table, message, Tag, Typography,
+  Upload, Table, message, Typography,
 } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
@@ -11,17 +11,17 @@ import type { DataTaskStatus } from '../../types';
 const { Dragger } = Upload;
 const { Text } = Typography;
 
-const STATUS_COLOR: Record<string, string> = {
-  pending: 'default',
-  processing: 'processing',
-  completed: 'success',
-  failed: 'error',
-};
 const STATUS_LABEL: Record<string, string> = {
   pending: '等待中',
   processing: '处理中',
   completed: '已完成',
   failed: '失败',
+};
+const STATUS_DOT: Record<string, string> = {
+  pending: '#A8A29E',
+  processing: '#4A5630',
+  completed: '#4A5630',
+  failed: '#DC2626',
 };
 
 interface TaskRecord extends DataTaskStatus {
@@ -125,7 +125,12 @@ export default function DataUpload() {
     { title: '文件名', dataIndex: 'filename', key: 'filename' },
     {
       title: '状态', dataIndex: 'status', key: 'status',
-      render: (s: string) => <Tag color={STATUS_COLOR[s]}>{STATUS_LABEL[s] || s}</Tag>,
+      render: (s: string) => (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: STATUS_DOT[s] || '#A8A29E', display: 'inline-block' }} />
+          <span style={{ color: STATUS_DOT[s] || '#A8A29E' }}>{STATUS_LABEL[s] || s}</span>
+        </span>
+      ),
     },
     {
       title: '进度', key: 'progress',
@@ -162,13 +167,23 @@ export default function DataUpload() {
         customRequest={handleUpload}
         disabled={uploading}
         showUploadList={false}
-        style={{ marginBottom: 24 }}
+        style={{
+          border: '2px dashed #D6D3D0',
+          borderRadius: 6,
+          background: '#FAFAF9',
+          padding: '32px 24px',
+          marginBottom: 24,
+        }}
       >
         <p className="ant-upload-drag-icon">
-          <InboxOutlined />
+          <InboxOutlined style={{ color: '#A8A29E', fontSize: 32 }} />
         </p>
-        <p className="ant-upload-text">点击或拖拽上传原始 Excel 文件</p>
-        <p className="ant-upload-hint">支持 .xlsx / .xls 格式，最大 100MB</p>
+        <p style={{ color: '#44403C', fontSize: 14, marginBottom: 4, fontWeight: 500 }}>
+          点击或拖拽上传原始 Excel 文件
+        </p>
+        <p style={{ color: '#A8A29E', fontSize: 12, margin: 0 }}>
+          支持 .xlsx / .xls 格式，最大 100MB
+        </p>
       </Dragger>
 
       <Table

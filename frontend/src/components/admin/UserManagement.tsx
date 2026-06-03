@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Table, Select, Switch, Input, message, Tag, Space, Typography,
+  Table, Select, Switch, Input, message, Tag, Space,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -9,7 +9,6 @@ import { useAuthStore } from '../../store/authStore';
 import type { User } from '../../types';
 import EmptyState from '../common/EmptyState';
 
-const { Text } = Typography;
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: '管理员' },
@@ -17,8 +16,8 @@ const ROLE_OPTIONS = [
 ];
 
 const ROLE_COLOR: Record<string, string> = {
-  admin: 'red',
-  reviewer: 'blue',
+  admin: '#44403C',
+  reviewer: '#4A5630',
 };
 
 export default function UserManagement() {
@@ -113,7 +112,10 @@ export default function UserManagement() {
               disabled={isSelf}
               onChange={(checked) => handleActiveChange(record.user_id, checked)}
             />
-            <Text type={v ? 'success' : 'secondary'}>{v ? '启用' : '停用'}</Text>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: v ? '#4A5630' : '#A8A29E', display: 'inline-block' }} />
+              <span style={{ color: v ? '#4A5630' : '#A8A29E' }}>{v ? '启用' : '停用'}</span>
+            </span>
           </Space>
         );
       },
