@@ -163,9 +163,9 @@ export default function CaseDetailPage() {
         <PredictionCard detail={detail} />
       </Card>
 
-      <InsureeCard insuree={detail.insuree} />
-      <PolicyCard policy={detail.policy} />
-      <ClaimCard claim={detail.accident_claim} />
+      <InsureeCard insuree={detail.insuree} featureValues={detail.feature_values} />
+      <PolicyCard policy={detail.policy} featureValues={detail.feature_values} />
+      <ClaimCard claim={detail.accident_claim} featureValues={detail.feature_values} />
 
       <Card style={{ marginBottom: 16 }}>
         <ShapCard shapValues={detail.shap_values} />

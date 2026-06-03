@@ -7,52 +7,91 @@ const riskColorMap: Record<string, string> = {
   low: 'green',
 };
 
+type FV = Record<string, unknown> | null;
+
+function fvStr(fv: FV, key: string): string | null {
+  const v = fv?.[key];
+  if (v === null || v === undefined) return null;
+  return String(v);
+}
+
+function fvNum(fv: FV, key: string): number | null {
+  const v = fv?.[key];
+  if (v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+}
+
 // ---- 被保险人信息 ----
-export function InsureeCard({ insuree }: { insuree: CaseDetailResponse['insuree'] }) {
+export function InsureeCard({ insuree, featureValues }: {
+  insuree: CaseDetailResponse['insuree'];
+  featureValues: FV;
+}) {
   if (!insuree) return null;
   return (
     <Descriptions title="被保险人信息" column={2} bordered size="small" style={{ marginBottom: 16 }}>
       <Descriptions.Item label="被保险人ID">{insuree.insuree_id}</Descriptions.Item>
-      <Descriptions.Item label="年龄">{insuree.age ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="性别">{insuree.gender ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="职业">{insuree.occupation ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="成员类型">{fvStr(featureValues, 'MBR_TYPE') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="是否新保户">
+        {fvNum(featureValues, 'IS_NEW_INSURED') === 1 ? '是' : fvNum(featureValues, 'IS_NEW_INSURED') === 0 ? '否' : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="是否长期保户">
+        {fvNum(featureValues, 'IS_LONGTERM_INSURED') === 1 ? '是（≥5年）' : fvNum(featureValues, 'IS_LONGTERM_INSURED') === 0 ? '否' : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="历史理赔次数">{fvNum(featureValues, 'MBR_CLAIM_COUNT') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="历史均赔金额">
+        {fvNum(featureValues, 'MBR_AVG_SUB_AMT') != null ? `¥${fvNum(featureValues, 'MBR_AVG_SUB_AMT')!.toFixed(2)}` : '-'}
+      </Descriptions.Item>
     </Descriptions>
   );
 }
 
 // ---- 保单信息 ----
-export function PolicyCard({ policy }: { policy: CaseDetailResponse['policy'] }) {
+export function PolicyCard({ policy, featureValues }: {
+  policy: CaseDetailResponse['policy'];
+  featureValues: FV;
+}) {
   if (!policy) return null;
   return (
     <Descriptions title="保单信息" column={2} bordered size="small" style={{ marginBottom: 16 }}>
       <Descriptions.Item label="保单号">{policy.policy_id}</Descriptions.Item>
-      <Descriptions.Item label="保险类型">{policy.insurance_type ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="保额">
-        {policy.insurance_amount != null ? `¥${policy.insurance_amount.toLocaleString()}` : '-'}
-      </Descriptions.Item>
-      <Descriptions.Item label="保费">
-        {policy.premium != null ? `¥${policy.premium.toLocaleString()}` : '-'}
-      </Descriptions.Item>
+      <Descriptions.Item label="险种代码">{fvStr(featureValues, 'KIND_CODE') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="保单计划">{fvStr(featureValues, 'POCY_PLAN_DESC') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="投保年限">{fvNum(featureValues, 'NO_OF_YR') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="保单数">{fvNum(featureValues, 'POLICY_CNT') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="发票数">{fvNum(featureValues, 'INVOICE_CNT') ?? '-'}</Descriptions.Item>
     </Descriptions>
   );
 }
 
 // ---- 理赔信息 ----
-export function ClaimCard({ claim }: { claim: CaseDetailResponse['accident_claim'] }) {
+export function ClaimCard({ claim, featureValues }: {
+  claim: CaseDetailResponse['accident_claim'];
+  featureValues: FV;
+}) {
   if (!claim) return null;
   return (
     <Descriptions title="理赔信息" column={2} bordered size="small" style={{ marginBottom: 16 }}>
-      <Descriptions.Item label="事故日期">{claim.accident_date ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="事故类型">{claim.accident_type ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="理赔金额">
-        {claim.claim_amount != null ? `¥${claim.claim_amount.toLocaleString()}` : '-'}
+      <Descriptions.Item label="诊断大类">{fvStr(featureValues, 'ICD10_CHAPTER') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="受益类型">{fvStr(featureValues, 'BEN_TYPE') ?? '-'}</Descriptions.Item>
+      <Descriptions.Item label="理赔申请金额">
+        {fvNum(featureValues, 'SUB_AMT') != null ? `¥${fvNum(featureValues, 'SUB_AMT')!.toFixed(2)}` : '-'}
       </Descriptions.Item>
-      <Descriptions.Item label="理赔日期">{claim.claim_date ?? '-'}</Descriptions.Item>
-      <Descriptions.Item label="是否欺诈">
-        {claim.is_fraud != null ? (claim.is_fraud === true ? '欺诈' : '正常') : '-'}
+      <Descriptions.Item label="住院天数">
+        {fvNum(featureValues, 'DAYS_HOSPITALIZATION') != null ? `${fvNum(featureValues, 'DAYS_HOSPITALIZATION')} 天` : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="是否住院">
+        {fvNum(featureValues, 'IS_INPATIENT') === 1 ? '是' : fvNum(featureValues, 'IS_INPATIENT') === 0 ? '否' : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="就诊到赔付天数">
+        {fvNum(featureValues, 'DAYS_INCUR_TO_PAY') != null ? `${fvNum(featureValues, 'DAYS_INCUR_TO_PAY')} 天` : '-'}
       </Descriptions.Item>
       <Descriptions.Item label="是否赔付">
-        {claim.is_paid != null ? (claim.is_paid === true ? '已赔付' : '未赔付') : '-'}
+        {claim.is_paid != null ? (claim.is_paid === true ? '已赔付' : '未赔付') :
+          claim.claim_amount != null ? `¥${claim.claim_amount.toLocaleString()}` : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label="是否欺诈">
+        {claim.is_fraud != null ? (claim.is_fraud === true ? '欺诈' : '正常') : '-'}
       </Descriptions.Item>
     </Descriptions>
   );

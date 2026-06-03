@@ -150,9 +150,6 @@ async def _process_rows(
 
                 # 7-step transform → model inference
                 X = feature_transform.transform_single(feature_dict)
-                # transform_single 返回 params 顺序 (continuous 在前)，模型
-                # 要求 model 顺序 (categorical 在前)，需显式重排列序
-                X = X[model_service.get_feature_cols()]
                 result = model_service.predict(X)
 
                 # Persist
