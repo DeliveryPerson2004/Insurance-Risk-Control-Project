@@ -107,6 +107,7 @@ export interface ShapItem {
 
 export interface PredictSingleResponse {
   id: number;
+  policy_id: string;
   fraud_prob: number;
   raw_prob: number;
   risk_level: 'high' | 'medium' | 'low';

@@ -69,6 +69,7 @@ class ShapItem(BaseModel):
 
 class PredictSingleResponse(BaseModel):
     id: int
+    policy_id: str
     fraud_prob: float
     raw_prob: float
     risk_level: str

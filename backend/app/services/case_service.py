@@ -46,6 +46,8 @@ async def list_cases(
         AccidentClaim.claim_amount,
     ).join(
         AccidentClaim, FraudDetectResult.accident_claim_id == AccidentClaim.id
+    ).join(
+        Policy, FraudDetectResult.policy_id == Policy.policy_id
     )
 
     conditions = []
@@ -62,7 +64,11 @@ async def list_cases(
         conditions.append(FraudDetectResult.detect_time <= date_to)
     if keyword:
         keyword = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        conditions.append(FraudDetectResult.policy_id.ilike(f"%{keyword}%"))
+        # 支持搜索保单号 或 被保险人ID
+        conditions.append(
+            FraudDetectResult.policy_id.ilike(f"%{keyword}%")
+            | Policy.insuree_id.ilike(f"%{keyword}%")
+        )
 
     if conditions:
         stmt = stmt.where(and_(*conditions))

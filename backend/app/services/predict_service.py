@@ -118,6 +118,7 @@ async def predict_single(
 
     return PredictSingleResponse(
         id=record.id,
+        policy_id=synthetic_policy_id,
         fraud_prob=result["fraud_prob"],
         raw_prob=result["raw_prob"],
         risk_level=result["risk_level"],

@@ -30,6 +30,12 @@ export default function PredictionPage() {
 
       {result && (
         <Card style={{ marginTop: 24 }}>
+          <div style={{ marginBottom: 16, padding: '8px 12px', background: '#f6f8fa', borderRadius: 6, fontSize: 13 }}>
+            保单号：<strong>{result.policy_id}</strong>
+            <span style={{ color: '#999', marginLeft: 12 }}>
+              （在案件管理搜索此号可查看详情）
+            </span>
+          </div>
           <Row gutter={24} align="top">
             <Col flex="240px">
               <RiskGauge
