@@ -1,3 +1,96 @@
+/* === Inter 自托管 === */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/inter-latin-300.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter-latin-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-latin-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin-700.woff2') format('woff2');
+}
+
+/* === CSS 变量（作为非 Ant Design 场景的补充） === */
+:root {
+  --color-content-bg: #FAFAF9;
+  --color-sidebar-bg: #EBE8E4;
+  --color-surface: #FFFFFF;
+  --color-border: #E7E5E2;
+  --color-divider: #D6D3D0;
+  --color-foreground: #292524;
+  --color-secondary: #44403C;
+  --color-muted: #6B625D;
+  --color-placeholder: #A8A29E;
+  --color-olive: #4A5630;
+  --color-olive-hover: #3B4526;
+  --color-olive-light: #EDF0E7;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEF2F2;
+  --color-warning: #947008;
+  --color-warning-light: #FFF8EB;
+  --color-success-surface: #F2F7ED;
+
+  --font-family: 'Inter', system-ui, -apple-system, 'Microsoft YaHei', sans-serif;
+  --radius: 6px;
+  --radius-sm: 4px;
+}
+
+/* === 全局重置 === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--color-foreground);
+  background: var(--color-content-bg);
+}
+
+/* 全局 h2 重设计 */
+h2 {
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--color-foreground);
+  margin: 0 0 8px 0;
+}
+
+/* 全局 h4 重设计 */
+h4 {
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-secondary);
+  margin: 0 0 12px 0;
 }
