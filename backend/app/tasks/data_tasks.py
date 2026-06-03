@@ -149,12 +149,10 @@ async def _process_rows(
                 feature_dict.update(missing_flags)
 
                 # 7-step transform → model inference
-                # 按模型期望列序显式重排 (categorical → _MISSING → continuous)
-                expected_cols = model_service.get_feature_cols()
-                ordered = {}
-                for c in expected_cols:
-                    ordered[c] = feature_dict[c]
-                X = feature_transform.transform_single(ordered)
+                X = feature_transform.transform_single(feature_dict)
+                # transform_single 返回 params 顺序 (continuous 在前)，模型
+                # 要求 model 顺序 (categorical 在前)，需显式重排列序
+                X = X[model_service.get_feature_cols()]
                 result = model_service.predict(X)
 
                 # Persist
