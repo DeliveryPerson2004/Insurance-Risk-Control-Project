@@ -78,7 +78,7 @@ export default function BatchPredictPage() {
         });
         startPolling(task_id);
       } catch {
-        // error handled by interceptor
+        message.error('文件上传失败，请检查文件格式和大小');
       } finally {
         setLoading(false);
       }

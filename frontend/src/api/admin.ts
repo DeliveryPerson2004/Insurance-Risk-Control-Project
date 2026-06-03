@@ -29,9 +29,9 @@ export async function fetchDataTasks(params: {
 export async function uploadData(file: File): Promise<{ task_id: string }> {
   const formData = new FormData();
   formData.append('file', file);
-  // 不设 Content-Type，让 axios 自动添加正确的 boundary
   const res = await client.post<ApiResponse<{ task_id: string }>>('/admin/data/upload', formData, {
-    timeout: 120000,  // 文件上传 2 分钟超时
+    timeout: 120000,
+    headers: { 'Content-Type': undefined as unknown as string },  // 删除默认 json header，让浏览器自动设 multipart
   });
   return res.data.data;
 }
