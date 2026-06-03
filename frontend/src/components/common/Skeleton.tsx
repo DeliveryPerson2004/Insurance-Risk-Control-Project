@@ -55,12 +55,12 @@ export function ChartSkeleton({ height = 220 }: { height?: number }) {
       <div
         style={{
           height,
-          background: '#fafafa',
+          background: '#F5F3F0',
           borderRadius: 8,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ccc',
+          color: '#A8A29E',
           marginTop: 8,
         }}
       >

@@ -11,7 +11,7 @@ export default function EmptyState({ description = '暂无数据', image, action
   return (
     <Empty
       image={image || Empty.PRESENTED_IMAGE_SIMPLE}
-      description={description}
+      description={<span style={{ color: '#6B625D' }}>{description}</span>}
       style={{ padding: '60px 0' }}
     >
       {action}
