@@ -249,8 +249,8 @@ export interface CaseStatsSummary {
 
 // ---- 管理面板 ----
 export interface UpdateUserRequest {
-  user_role: 'admin' | 'reviewer';
-  is_active: boolean;
+  user_role?: 'admin' | 'reviewer';
+  is_active?: boolean;
 }
 
 export interface UserListResponse {

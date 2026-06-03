@@ -7,8 +7,8 @@ from backend.app.models.user import UserRole
 
 
 class UpdateUserRequest(BaseModel):
-    user_role: UserRole
-    is_active: bool
+    user_role: UserRole | None = None
+    is_active: bool | None = None
 
 
 # 注意: UserOut 与 auth.UserResponse 字段相似但语义独立。
@@ -21,7 +21,7 @@ class UserOut(BaseModel):
     user_id: str
     username: str
     display_name: str
-    user_role: str
+    user_role: UserRole
     email: str | None
     phone: str | None
     is_active: bool

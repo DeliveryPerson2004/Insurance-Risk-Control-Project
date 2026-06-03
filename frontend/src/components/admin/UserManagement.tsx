@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Table, Select, Switch, Input, message, Tag, Space, Typography,
 } from 'antd';
@@ -28,8 +28,6 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [keyword, setKeyword] = useState('');
-  const usersRef = useRef(users);
-  usersRef.current = users;
   const currentUser = useAuthStore((s) => s.user);
 
   const loadUsers = useCallback(async () => {
@@ -56,10 +54,8 @@ export default function UserManagement() {
 
   const handleRoleChange = async (userId: string, userRole: string) => {
     try {
-      const target = usersRef.current.find((u) => u.user_id === userId);
       await updateUser(userId, {
         user_role: userRole as 'admin' | 'reviewer',
-        is_active: target?.is_active ?? true,
       });
       message.success('角色已更新');
       loadUsers();
@@ -70,9 +66,7 @@ export default function UserManagement() {
 
   const handleActiveChange = async (userId: string, isActive: boolean) => {
     try {
-      const target = usersRef.current.find((u) => u.user_id === userId);
       await updateUser(userId, {
-        user_role: target?.user_role ?? 'reviewer',
         is_active: isActive,
       });
       message.success(isActive ? '已启用' : '已停用');

@@ -30,6 +30,14 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  if (user?.user_role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -65,7 +73,7 @@ export default function App() {
                 <Route path="predict/batch" element={<BatchPredictPage />} />
                 <Route path="cases" element={<CaseListPage />} />
                 <Route path="cases/:id" element={<CaseDetailPage />} />
-                <Route path="admin" element={<AdminPage />} />
+                <Route path="admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
               </Route>
               <Route path="*" element={<div style={{ padding: 48, textAlign: 'center' }}>404</div>} />
             </Routes>
