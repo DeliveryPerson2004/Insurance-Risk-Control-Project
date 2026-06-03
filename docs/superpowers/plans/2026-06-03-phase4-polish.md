@@ -8,6 +8,11 @@
 
 **Tech Stack:** React 18 + TypeScript + Ant Design 5 (Result, Empty, Skeleton)
 
+**范围说明:**
+- 本次打磨仅覆盖 **React 渲染层**（ErrorBoundary / Skeleton / EmptyState）
+- **API 层全局异常处理**（Axios interceptor 统一 toast、403/500 降级）不在此次范围内，当前各组件 `catch` 中 `message.error()` 已可接受
+- DashboardPage 的 StatsCards 加载优化（空白卡片→CardSkeleton）作为已知改进项记录，本次不阻塞
+
 ---
 
 ### Task 1: ErrorBoundary + App.tsx 接入
@@ -124,14 +129,14 @@ import type { ReactNode } from 'react';
 
 interface Props {
   description?: string;
-  icon?: ReactNode;
+  image?: ReactNode;  // 与 antd Empty.image 命名一致，传入的是插图
   action?: ReactNode;
 }
 
-export default function EmptyState({ description = '暂无数据', icon, action }: Props) {
+export default function EmptyState({ description = '暂无数据', image, action }: Props) {
   return (
     <Empty
-      image={icon || Empty.PRESENTED_IMAGE_SIMPLE}
+      image={image || Empty.PRESENTED_IMAGE_SIMPLE}
       description={description}
       style={{ padding: '60px 0' }}
     >
@@ -238,9 +243,9 @@ git commit -m "feat: add Skeleton presets: TableSkeleton, CardSkeleton, DetailSk
 - Modify: `frontend/src/pages/BatchPredictPage.tsx`
 - Modify: `frontend/src/components/admin/UserManagement.tsx`
 
-- [ ] **Step 1: DashboardPage — CardSkeleton 替换 StatsCards 加载态**
+- [ ] **Step 1: DashboardPage — 本次跳过**
 
-`DashboardPage.tsx` 不涉及数据获取（StatsCards 内部自行加载），但可以为未来扩展预留。当前 StatsCards 组件已自行处理 loading，跳过修改。DashboardPage 无需改动。
+DashboardPage 无需修改。StatsCards 组件内部自行获取数据，初始渲染先显示 4 张空白统计卡片（value 为 0），API 返回后更新数据——无骨架屏过渡。这是第一个登录后看到的页面，是已知 UX 改进项，建议后续给 StatsCards 加显式 `loading` state 并在此处用 `<CardSkeleton />` 替换。本次不阻塞。
 
 - [ ] **Step 2: CaseListPage — TableSkeleton + EmptyState**
 
@@ -252,33 +257,28 @@ import { TableSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 ```
 
-将 `<CaseTable>` 包裹替换现有的 loading 处理。找到 CaseTable 渲染处，改为条件渲染:
+**只替换表格区域，筛选栏始终可见**（不用早期 return，避免筛选项消失）:
 
-```typescript
-// 修改前（在 return 中）:
-<CaseTable ... />
-
-// 修改后:
-if (loading) {
-  return <TableSkeleton />;
-}
-if (!loading && data.length === 0) {
-  return <EmptyState description="暂无案件" />;
-}
-```
-
-注意: 需要把 loading/data 提取到 return 之前做条件判断，然后将原来的 return JSX 放在 else 分支或 main return 中。
-
-更简洁的做法是在 render 中:
+找到 return 中的 `<CaseTable ... />` 行，替换为:
 ```typescript
 {loading ? (
   <TableSkeleton />
 ) : data.length === 0 ? (
   <EmptyState description="暂无案件" />
 ) : (
-  <CaseTable data={data} total={total} loading={false} ... />
+  <CaseTable
+    data={data}
+    total={total}
+    loading={false}
+    page={page}
+    pageSize={pageSize}
+    onPageChange={(p, ps) => { setPage(p); setPageSize(ps); }}
+    // ... 其余 props 保持不变
+  />
 )}
 ```
+
+筛选栏（风险等级 Select + 判定状态 Select + 日期 RangePicker + 关键词 Input）在 return 中始终渲染，不受 loading/empty 影响。
 
 - [ ] **Step 3: CaseDetailPage — DetailSkeleton 替换 Spin**
 
@@ -386,20 +386,22 @@ git commit -m "feat: integrate Skeleton and EmptyState into all pages"
 cd frontend && npx tsc --noEmit && npx vite build
 ```
 
-- [ ] **Step 2: 视觉验证**
+- [ ] **Step 2: 视觉验证（手动，需浏览器）**
 
 ```bash
-# 启动前端
 cd frontend && npm run dev
 # 浏览器访问 localhost:5173
-# 验证:
-# 1. 仪表盘加载时是否闪现 CardSkeleton（网络慢时可观察）
-# 2. 案件列表加载 → 表格骨架屏
-# 3. 空列表 → EmptyState
-# 4. 案件详情加载 → 详情骨架屏
-# 5. 批量预测空列表 → EmptyState
-# 6. 抛异常验证 ErrorBoundary（在控制台手动 throw Error）
 ```
+
+逐项验证并勾选:
+- [ ] 案件列表: 首次加载是否闪现 TableSkeleton → 数据展示
+- [ ] 案件列表: 空数据（username 搜不存在的值）→ EmptyState "暂无案件"
+- [ ] 案件详情: 点击某条记录加载 → DetailSkeleton → 详情展示
+- [ ] 批量预测: 历史任务列表为空 → EmptyState "暂无批量预测任务"
+- [ ] 用户管理: 用户列表为空 → EmptyState "暂无用户"
+- [ ] ErrorBoundary: 在任意页面控制台执行 `throw new Error('test')` → 显示 Result 错误页 + "刷新页面" 按钮 → 点击刷新恢复正常
+
+> 注: DashboardPage 骨架屏暂不验证（StatsCards 内部自行加载，已知改进项）
 
 - [ ] **Step 3: Commit（如有修复）**
 
