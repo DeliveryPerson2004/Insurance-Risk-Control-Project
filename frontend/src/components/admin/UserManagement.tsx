@@ -27,12 +27,13 @@ export default function UserManagement() {
   const [size, setSize] = useState(20);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [keyword, setKeyword] = useState('');
   const currentUser = useAuthStore((s) => s.user);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchUsers({ page, size, username: search || undefined });
+      const res = await fetchUsers({ page, size, username: keyword || undefined });
       setUsers(res.items);
       setTotal(res.total);
     } catch {
@@ -40,17 +41,23 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  }, [page, size, search]);
+  }, [page, size, keyword]);
 
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
+  const handleSearch = () => {
+    setKeyword(search);
+    setPage(1);
+  };
+
   const handleRoleChange = async (userId: string, userRole: string) => {
     try {
+      const target = users.find((u) => u.user_id === userId);
       await updateUser(userId, {
         user_role: userRole as 'admin' | 'reviewer',
-        is_active: true,
+        is_active: target?.is_active ?? true,
       });
       message.success('角色已更新');
       loadUsers();
@@ -129,11 +136,13 @@ export default function UserManagement() {
           allowClear
           style={{ width: 240 }}
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
+          onChange={(e) => setSearch(e.target.value)}
+          onPressEnter={handleSearch}
+          onClear={() => {
+            setSearch('');
+            setKeyword('');
             setPage(1);
           }}
-          onPressEnter={() => loadUsers()}
         />
       </Space>
       <Table
