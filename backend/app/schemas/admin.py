@@ -36,3 +36,23 @@ class UserListResponse(BaseModel):
     total: int
     page: int
     size: int
+
+
+class DataTaskStatus(BaseModel):
+    task_id: str
+    filename: str
+    status: str  # pending | processing | completed | failed
+    total: int | None = None
+    processed: int | None = None
+    success: int | None = None
+    failed: int | None = None
+    error_message: str | None = None
+    created_at: str | None = None
+    completed_at: str | None = None
+
+
+class DataTaskListResponse(BaseModel):
+    items: list[DataTaskStatus]
+    total: int
+    page: int
+    size: int

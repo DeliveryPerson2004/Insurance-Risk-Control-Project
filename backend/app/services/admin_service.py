@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.user import User, UserRole
 from backend.app.utils.exceptions import AppException
+from backend.app.utils.redis_utils import redis_get
 
 
 async def list_users(
@@ -63,3 +64,12 @@ async def update_user(
     await db.commit()
     await db.refresh(user)
     return user
+
+
+async def get_data_task_status(task_id: str) -> dict:
+    """从 Redis 查询数据导入任务进度."""
+    data = redis_get(f"data_task:{task_id}")
+    if data is None:
+        raise AppException("任务不存在或已过期", status_code=404)
+    data["task_id"] = task_id
+    return data
