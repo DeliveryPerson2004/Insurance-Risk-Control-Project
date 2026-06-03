@@ -8,18 +8,27 @@ import {
 } from '@ant-design/icons';
 import { fetchStats } from '../../api/dashboard';
 import type { DashboardStats } from '../../types';
+import { CardSkeleton } from '../common/Skeleton';
 
 export default function StatsCards() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats().then(setStats).catch(() => {});
+    fetchStats()
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setLoading(false));
 
     const interval = setInterval(() => {
       fetchStats().then(setStats).catch(() => {});
     }, 60_000);
     return () => clearInterval(interval);
   }, []);
+
+  if (loading) {
+    return <CardSkeleton count={4} />;
+  }
 
   return (
     <Row gutter={16}>
