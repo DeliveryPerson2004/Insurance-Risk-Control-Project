@@ -141,7 +141,7 @@ Shadow (3 层梯度):
 
 ```
 ┌─ 品牌条 (bg: #EBE8E4) ──────────────────────────┐
-│  医保风控系统 · 医疗保险欺诈检测系统                   │
+│  医疗保险欺诈检测系统                                 │
 └──────────────────────────────────────────────────┘
 ┌─ 表单区 (bg: #FAFAF9, 居中) ────────────────────┐
 │  ┌─ 登录/注册卡片 ──────────────────────────┐    │
@@ -403,7 +403,7 @@ Dashboard · 欺诈检测概览
 
 ## 7. 实施完成检查清单
 
-- [ ] `grep -rE '#[0-9a-fA-F]{6}' frontend/src/ --include='*.tsx' --include='*.css'` 确认无硬编码色值残留（Token 定义的 hex 除外）
+- [ ] `grep -rE '#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?' frontend/src/ --include='*.tsx' --include='*.css'` 确认无硬编码色值残留（Token 定义的 hex 除外）
 - [ ] `grep -r '1677ff\|667eea\|764ba2' frontend/src/` 确认旧颜色全部替换
 - [ ] Inter woff2 文件已放入 `frontend/public/fonts/`，`@font-face` 声明正确
 - [ ] 全部页面的 loading / empty / error 三态完整
