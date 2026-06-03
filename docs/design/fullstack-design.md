@@ -78,7 +78,7 @@ rgzn-class/
 │   │   │   ├── batch/               # BatchUpload, BatchProgress
 │   │   │   ├── cases/               # CaseTable, CaseDetail, AdjudicateModal
 │   │   │   ├── dashboard/           # StatsCards, RiskTrendChart, HighRiskTable
-│   │   │   ├── admin/               # ModelMonitor, DataUpload, UserManagement
+│   │   │   ├── admin/               # DataUpload, UserManagement
 │   │   │   └── common/              # LoadingSpinner, StatusTag, EmptyState
 │   │   ├── pages/                   # 8 个页面组件
 │   │   ├── hooks/                   # useAuth, usePagination
@@ -173,7 +173,7 @@ rgzn-class/
 | `/predict/batch` | 批量预测 | reviewer, admin |
 | `/cases` | 案件列表 | reviewer, admin |
 | `/cases/:id` | 案件详情 | reviewer, admin |
-| `/admin` | 管理面板（Tab: 模型监控/数据管理/用户管理） | admin only |
+| `/admin` | 管理面板（Tab: 数据管理/用户管理） | admin only |
 | `*` | 404 | 公开 |
 
 ---
@@ -359,19 +359,17 @@ celery-worker ──→ postgres:5432
 
 ### Phase 4: 管理面板 + 打磨
 
-**4.1 模型监控**
-- `GET /api/admin/models` + 指标端点 + 评估图 PNG 端点
-- 前端 ModelMonitor：指标卡片 + 图表展示
+> 注：原计划 4.1 模型监控已取消。当前只有一个静态推理模型，无 ground truth 标注、无多版本对比、无漂移检测管线，模型监控不具备实施条件。模型关键指标（AUC/F1/阈值等）已记录在 `model_info` 表和 `docs/modeling/report.md` 中。
 
-**4.2 数据管理**
+**4.1 数据管理**
 - `POST /api/admin/data/upload`：Celery 任务运行 preprocessing.py 管线
 - 前端 DataUpload：上传 + 处理状态追踪
 
-**4.3 用户管理**
+**4.2 用户管理**
 - `GET/PUT/DELETE /api/admin/users`：列表、修改角色、停用
 - 前端 UserManagement：用户表格 + 角色编辑
 
-**4.4 打磨**
+**4.3 打磨**
 - 全局异常处理 + 友好错误提示
 - 加载态（Skeleton）+ 空态（EmptyState）+ 错误边界
 - 路由守卫（admin only 重定向）
