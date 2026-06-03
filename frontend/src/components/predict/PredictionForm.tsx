@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Select, InputNumber, Input, Button, message, Spin, Row, Col } from 'antd';
+import { Form, Select, InputNumber, Input, Button, message, Spin } from 'antd';
 import type { FieldOption } from '../../types';
 import { getFieldOptions } from '../../api/predict';
 
@@ -98,28 +98,30 @@ export default function PredictionForm({ onResult, loading }: Props) {
         </Form.Item>
       </div>
 
-      {/* 字段分组 — 2 列网格 */}
-      <Row gutter={[16, 0]}>
+      {/* 字段分组 — 2 列网格，自然高度对齐 */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 16,
+        alignItems: 'start',
+      }}>
         {groups.map((group) => (
-          <Col span={12} key={group}>
-            <div style={{
-              background: '#FFFFFF',
-              border: '1px solid #E7E5E2',
-              borderRadius: 6,
-              padding: '16px 24px',
-              marginBottom: 16,
-            }}>
-              <h4 style={{ marginBottom: 12 }}>
-                {group}
-                <span style={{ fontWeight: 400, fontSize: 11, color: '#A8A29E', marginLeft: 8 }}>
-                  {getFieldsByGroup(group).length} 字段
-                </span>
-              </h4>
-              {getFieldsByGroup(group).map(renderField)}
-            </div>
-          </Col>
+          <div key={group} style={{
+            background: '#FFFFFF',
+            border: '1px solid #E7E5E2',
+            borderRadius: 6,
+            padding: '16px 24px',
+          }}>
+            <h4 style={{ marginBottom: 12 }}>
+              {group}
+              <span style={{ fontWeight: 400, fontSize: 11, color: '#A8A29E', marginLeft: 8 }}>
+                {getFieldsByGroup(group).length} 字段
+              </span>
+            </h4>
+            {getFieldsByGroup(group).map(renderField)}
+          </div>
         ))}
-      </Row>
+      </div>
 
       {/* 操作按钮 */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
