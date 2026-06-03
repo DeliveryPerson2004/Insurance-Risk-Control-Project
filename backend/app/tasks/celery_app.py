@@ -8,7 +8,7 @@ celery_app = Celery(
     "fraud_detect",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["backend.app.tasks.batch_tasks"],
+    include=["backend.app.tasks.batch_tasks", "backend.app.tasks.data_tasks"],
 )
 
 celery_app.conf.update(
