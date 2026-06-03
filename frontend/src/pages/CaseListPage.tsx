@@ -1,12 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  Card,
   Select,
   DatePicker,
   Input,
   Row,
   Col,
-  Typography,
   Space,
   message,
 } from 'antd';
@@ -17,7 +15,6 @@ import type { CaseListItem } from '../types';
 import { TableSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 
-const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
 export default function CaseListPage() {
@@ -32,12 +29,8 @@ export default function CaseListPage() {
   const [keyword, setKeyword] = useState('');
 
   const loadData = useCallback(async (
-    p?: number,
-    s?: number,
-    rl?: string,
-    mr?: string,
-    dr?: [string, string] | undefined,
-    kw?: string,
+    p?: number, s?: number, rl?: string, mr?: string,
+    dr?: [string, string] | undefined, kw?: string,
   ) => {
     const pageNum = p ?? 1;
     const sizeNum = s ?? 20;
@@ -46,8 +39,7 @@ export default function CaseListPage() {
     setLoading(true);
     try {
       const res = await fetchCases({
-        page: pageNum,
-        size: sizeNum,
+        page: pageNum, size: sizeNum,
         risk_level: rl !== undefined ? rl : riskLevel,
         manual_result: mr !== undefined ? mr : manualResult,
         date_from: dr !== undefined ? dr?.[0] : dateRange?.[0],
@@ -65,31 +57,34 @@ export default function CaseListPage() {
 
   const initialLoadDone = useRef(false);
   useEffect(() => {
-    if (!initialLoadDone.current) {
-      initialLoadDone.current = true;
-      loadData();
-    }
+    if (!initialLoadDone.current) { initialLoadDone.current = true; loadData(); }
   }, [loadData]);
 
-  const handlePageChange = (p: number, ps: number) => {
-    loadData(p, ps);
-  };
-
-  const handleSearch = () => {
-    loadData(1, pageSize, undefined, undefined, undefined, keyword);
-  };
+  const handlePageChange = (p: number, ps: number) => { loadData(p, ps); };
+  const handleSearch = () => { loadData(1, pageSize, undefined, undefined, undefined, keyword); };
 
   return (
     <div>
-      <Title level={4} style={{ marginBottom: 24 }}>案件管理</Title>
+      <h2>案件管理</h2>
+      <p style={{ color: '#6B625D', fontSize: 13, marginBottom: 16 }}>
+        审核工作台 · 共 {total} 条记录
+      </p>
 
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
+      {/* 筛选栏 — 无 Card 外框 */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E7E5E2',
+        borderRadius: 6,
+        padding: '12px 16px',
+        marginBottom: 16,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      }}>
+        <Row gutter={[12, 12]} align="middle">
           <Col>
             <Select
               placeholder="风险等级"
               allowClear
-              style={{ width: 140 }}
+              style={{ width: 130 }}
               value={riskLevel}
               onChange={(v) => { setRiskLevel(v); loadData(1, pageSize, v, undefined, undefined, undefined); }}
               options={[
@@ -103,7 +98,7 @@ export default function CaseListPage() {
             <Select
               placeholder="人工判定"
               allowClear
-              style={{ width: 140 }}
+              style={{ width: 130 }}
               value={manualResult}
               onChange={(v) => { setManualResult(v); loadData(1, pageSize, undefined, v, undefined, undefined); }}
               options={[
@@ -118,10 +113,7 @@ export default function CaseListPage() {
               placeholder={['开始日期', '结束日期']}
               onChange={(dates) => {
                 if (dates && dates[0] && dates[1]) {
-                  const dr: [string, string] = [
-                    dates[0].format('YYYY-MM-DD'),
-                    dates[1].format('YYYY-MM-DD'),
-                  ];
+                  const dr: [string, string] = [dates[0].format('YYYY-MM-DD'), dates[1].format('YYYY-MM-DD')];
                   setDateRange(dr);
                   loadData(1, pageSize, undefined, undefined, dr, undefined);
                 } else {
@@ -143,22 +135,25 @@ export default function CaseListPage() {
               <SearchOutlined
                 onClick={handleSearch}
                 style={{
-                  padding: '0 12px',
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  border: '1px solid #d9d9d9',
-                  borderRadius: '0 6px 6px 0',
-                  background: '#fafafa',
+                  padding: '0 12px', fontSize: 16, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center',
+                  border: '1px solid #E7E5E2', borderRadius: '0 6px 6px 0',
+                  background: '#FAFAF9', color: '#6B625D',
                 }}
               />
             </Space.Compact>
           </Col>
         </Row>
-      </Card>
+      </div>
 
-      <Card>
+      {/* 表格容器 */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E7E5E2',
+        borderRadius: 6,
+        padding: 24,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+      }}>
         {loading ? (
           <TableSkeleton />
         ) : data.length === 0 ? (
@@ -167,15 +162,11 @@ export default function CaseListPage() {
           <CaseTable
             data={data}
             loading={false}
-            pagination={{
-              current: page,
-              pageSize: pageSize,
-              total: total,
-            }}
+            pagination={{ current: page, pageSize, total }}
             onPageChange={handlePageChange}
           />
         )}
-      </Card>
+      </div>
     </div>
   );
 }
