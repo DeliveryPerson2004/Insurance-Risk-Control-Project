@@ -13,8 +13,12 @@ __pycache__/
 *.egg-info/
 .ipynb_checkpoints/
 
+# ===== Superpowers 临时产物 =====
+.superpowers/brainstorm/
+
 # ===== 原始数据（不入库） =====
 data/raw/*
+data/test_batch_5rows.csv
 !data/raw/.gitkeep
 
 # ===== 模型文件（大文件，不入库） =====

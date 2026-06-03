@@ -1,35 +1,275 @@
-# Phase 4 模块 3: 打磨 Implementation Plan
+# Phase 4 收尾修复 — 5 项已知问题 实现计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 新增 3 个共用组件（ErrorBoundary / EmptyState / Skeleton），接入 5 个页面替换 loading spinner 和空状态
+**Goal:** 修复 Phase 1-4 后 5 个已知问题：FEATURE_COLS 顺序不一致（JSON + 代码防御）、StatsCards 加载态缺失、ErrorBoundary 缺 componentDidCatch、Skeleton/EmptyState 视觉验证+补缺、批量预测端到端测试
 
-**Architecture:** 所有组件置于 `frontend/src/components/common/`，纯展示组件无业务逻辑依赖。ErrorBoundary 在 App.tsx 最外层包裹；Skeleton + EmptyState 各页面按需引入
+**Architecture:** 5 个独立任务，前 4 个是代码修改（3 前端 + 1 后端），最后 1 个是功能测试。Task 1 是唯一涉及数据正确性的（JSON 对齐模型 + 代码防御重排），其余为前端体验优化和验证。
 
-**Tech Stack:** React 18 + TypeScript + Ant Design 5 (Result, Empty, Skeleton)
+**Tech Stack:** Python 3（preprocess_params.json, feature_transform.py）+ React/TypeScript（StatsCards, ErrorBoundary, BatchPredictPage）
 
-**范围说明:**
-- 本次打磨仅覆盖 **React 渲染层**（ErrorBoundary / Skeleton / EmptyState）
-- **API 层全局异常处理**（Axios interceptor 统一 toast、403/500 降级）不在此次范围内，当前各组件 `catch` 中 `message.error()` 已可接受
-- DashboardPage 的 StatsCards 加载优化（空白卡片→CardSkeleton）作为已知改进项记录，本次不阻塞
+**关键发现:** `preprocess_params.json` 的 `feature_cols` 顺序为 `cont(23) → cat(7) → missing(5)`，而模型 pickle 期望 `cat(7) → missing(5) → cont(23)`，两者完全不同。
 
 ---
 
-### Task 1: ErrorBoundary + App.tsx 接入
+## 文件变更清单
+
+| 文件 | 变更类型 | 职责 |
+|------|----------|------|
+| `backend/app/services/preprocess_params.json` | 修改 | 调整 feature_cols 顺序与模型一致 |
+| `backend/app/services/feature_transform.py:184-185` | 修改 | 防御性重排：最终列序对齐模型 |
+| `frontend/src/components/dashboard/StatsCards.tsx` | 修改 | 添加 loading 状态 + CardSkeleton |
+| `frontend/src/components/common/ErrorBoundary.tsx` | 修改 | 补充 componentDidCatch 日志 |
+| `frontend/src/pages/BatchPredictPage.tsx` | 修改 | 历史任务列表添加 TableSkeleton |
+
+---
+
+### Task 1: 修复 FEATURE_COLS 顺序 — JSON 对齐模型 + 代码防御
+
+**根因:** `preprocess_params.json` 的 `feature_cols` 顺序 (cont→cat→missing) 与模型 pickle 期望的 `feature_cols` 顺序 (cat→missing→cont) 不一致。`batch_tasks.py:140` 的 `X = X[model_service.get_feature_cols()]` 是补丁式修复，根因未消除。`transform_single()` 内部应按模型顺序输出，而非依赖调用方重排。
 
 **Files:**
-- Create: `frontend/src/components/common/ErrorBoundary.tsx`
-- Modify: `frontend/src/App.tsx`
+- Modify: `backend/app/services/preprocess_params.json`
+- Modify: `backend/app/services/feature_transform.py:184-185`
 
-- [ ] **Step 1: 创建 ErrorBoundary**
+- [ ] **Step 1: 更新 `preprocess_params.json` 的 `feature_cols` 顺序**
 
-```bash
-mkdir -p frontend/src/components/common
+将 `feature_cols` 数组（第 43-78 行）从 `cont_cols + cat_cols + missing_cols` 改为模型顺序 `cat_cols + missing_cols + cont_cols`。
+
+当前顺序（cont→cat→missing）:
+```json
+"feature_cols": [
+  "SUB_AMT",
+  "TOTAL_RECEIPT_AMT",
+  ...
+  "MBR_UNIQUE_HOSPITALS",
+  "ICD10_CHAPTER",
+  ...
+  "POCY_PLAN_DESC",
+  "TOTAL_RECEIPT_AMT_MISSING",
+  ...
+  "KIND_CODE_MISSING"
+]
 ```
 
-创建 `frontend/src/components/common/ErrorBoundary.tsx`:
+改为模型顺序（cat→missing→cont）:
+```json
+"feature_cols": [
+  "ICD10_CHAPTER",
+  "BH_PREFIX",
+  "BH_CATEGORY",
+  "MBR_TYPE",
+  "BEN_TYPE",
+  "KIND_CODE",
+  "POCY_PLAN_DESC",
+  "TOTAL_RECEIPT_AMT_MISSING",
+  "DAYS_INCUR_TO_PAY_MISSING",
+  "DAYS_RCV_TO_CLOSE_MISSING",
+  "DAYS_RCV_TO_PAY_MISSING",
+  "KIND_CODE_MISSING",
+  "SUB_AMT",
+  "TOTAL_RECEIPT_AMT",
+  "ORG_PRES_AMT_VALUE",
+  "COPAY_PCT",
+  "NO_OF_YR",
+  "POLICY_CNT",
+  "INVOICE_CNT",
+  "DAYS_INCUR_TO_PAY",
+  "DAYS_RCV_TO_CLOSE",
+  "DAYS_HOSPITALIZATION",
+  "DAYS_RCV_TO_PAY",
+  "IS_INPATIENT",
+  "INCUR_MONTH",
+  "INCUR_DAYOFWEEK",
+  "INCUR_QUARTER",
+  "INCUR_IS_WEEKEND",
+  "PROV_LEVEL_ORDINAL",
+  "RECEIPT_TO_SUB_RATIO",
+  "IS_NEW_INSURED",
+  "IS_LONGTERM_INSURED",
+  "MBR_CLAIM_COUNT",
+  "MBR_AVG_SUB_AMT",
+  "MBR_UNIQUE_HOSPITALS"
+]
+```
 
-```typescript
+- [ ] **Step 2: 在 `feature_transform.py` 末尾添加防御性重排**
+
+将 `transform_single` 函数的最后一行（当前为 `return df[FEATURE_COLS]`）改为使用模型期望的顺序：
+
+```python
+# feature_transform.py, line 184-185 — 替换这两行:
+    # 6) 确保 final 列序（输入已验证完整，直接按 FEATURE_COLS 排列）
+    return df[FEATURE_COLS]
+
+# 改为:
+    # 6) 确保 final 列序与模型期望一致（防御性对齐，防止 JSON 配置漂移）
+    from backend.app.services import model_service
+    model_cols = model_service.get_feature_cols()
+    if list(df.columns) != model_cols:
+        logger.warning(
+            "transform_single: 列序与模型不一致，自动重排。请检查 preprocess_params.json 的 feature_cols。"
+        )
+        return df[model_cols]
+    return df
+```
+
+> 说明：将 import 放在函数内部以避免模块级循环依赖（`feature_transform` 和 `model_service` 目前互不依赖）。
+
+- [ ] **Step 3: 移除 batch_tasks.py 中的冗余重排**
+
+`batch_tasks.py:140` 的 `X = X[model_service.get_feature_cols()]` 在 Step 2 后变为冗余（`transform_single` 已保证正确顺序）。移除该行及上方注释以消除混淆：
+
+```python
+# batch_tasks.py, 删除 line 138-140:
+# 当前:
+                X = feature_transform.transform_single(feature_dict)
+                # transform_single 返回 params 顺序，模型要求不同顺序，需显式重排
+                X = X[model_service.get_feature_cols()]
+
+# 改为:
+                X = feature_transform.transform_single(feature_dict)
+```
+
+- [ ] **Step 4: 验证修复**
+
+```bash
+uv run python -c "
+from backend.app.services import feature_transform, model_service
+
+d = {}
+for c in model_service.get_feature_cols():
+    d[c] = 0.0
+
+X = feature_transform.transform_single(d)
+expected = model_service.get_feature_cols()
+actual = list(X.columns)
+assert actual == expected, f'MISMATCH!\nExpected: {expected}\nActual:   {actual}'
+print('PASS: transform_single column order matches model')
+"
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add backend/app/services/preprocess_params.json backend/app/services/feature_transform.py backend/app/tasks/batch_tasks.py
+git commit -m "fix: align preprocess_params.json feature_cols order with model, add defensive reorder in transform_single"
+```
+
+---
+
+### Task 2: StatsCards 加载优化
+
+**Files:**
+- Modify: `frontend/src/components/dashboard/StatsCards.tsx`
+
+- [ ] **Step 1: 添加 loading 状态和 CardSkeleton**
+
+将 StatsCards 从初始显示 4 张全 0 卡片改为加载中显示 `CardSkeleton`，加载完成后显示数据。
+
+完整修改后的文件：
+
+```tsx
+import { useEffect, useState } from 'react';
+import { Card, Col, Row, Statistic } from 'antd';
+import {
+  ClockCircleOutlined,
+  WarningOutlined,
+  CheckCircleOutlined,
+  DatabaseOutlined,
+} from '@ant-design/icons';
+import { fetchStats } from '../../api/dashboard';
+import type { DashboardStats } from '../../types';
+import { CardSkeleton } from '../common/Skeleton';
+
+export default function StatsCards() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats()
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+
+    const interval = setInterval(() => {
+      fetchStats().then(setStats).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return <CardSkeleton count={4} />;
+  }
+
+  return (
+    <Row gutter={16}>
+      <Col span={6}>
+        <Card>
+          <Statistic
+            title="今日待审核"
+            value={stats?.today_pending ?? 0}
+            prefix={<ClockCircleOutlined />}
+          />
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card>
+          <Statistic
+            title="今日高风险"
+            value={stats?.today_high_risk ?? 0}
+            prefix={<WarningOutlined />}
+            styles={{ content: { color: '#cf1322' } }}
+          />
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card>
+          <Statistic
+            title="今日已处理"
+            value={stats?.today_processed ?? 0}
+            prefix={<CheckCircleOutlined />}
+            styles={{ content: { color: '#3f8600' } }}
+          />
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card>
+          <Statistic
+            title="累计检测量"
+            value={stats?.total_detected ?? 0}
+            prefix={<DatabaseOutlined />}
+          />
+        </Card>
+      </Col>
+    </Row>
+  );
+}
+```
+
+- [ ] **Step 2: TypeScript 检查**
+
+```bash
+cd frontend && npx tsc --noEmit
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add frontend/src/components/dashboard/StatsCards.tsx
+git commit -m "feat: add CardSkeleton loading state to StatsCards"
+```
+
+---
+
+### Task 3: ErrorBoundary 补充 componentDidCatch
+
+**Files:**
+- Modify: `frontend/src/components/common/ErrorBoundary.tsx`
+
+- [ ] **Step 1: 添加 componentDidCatch 日志记录**
+
+```tsx
 import { Component, type ReactNode } from 'react';
 import { Result, Button } from 'antd';
 
@@ -47,6 +287,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[ErrorBoundary] Uncaught error:', error.message);
+    console.error('[ErrorBoundary] Component stack:', info.componentStack);
+    // 后续可接入错误上报服务（如 Sentry）
   }
 
   handleRefresh = () => {
@@ -73,80 +319,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 }
 ```
 
-- [ ] **Step 2: App.tsx 包裹 ErrorBoundary**
-
-修改 `frontend/src/App.tsx`:
-
-在文件顶部 import 区域添加:
-```typescript
-import ErrorBoundary from './components/common/ErrorBoundary';
-```
-
-在 `<AntApp>` 内部包裹 `<ErrorBoundary>`:
-```typescript
-// 修改前:
-<AntApp>
-  <BrowserRouter>
-    ...
-  </BrowserRouter>
-</AntApp>
-
-// 修改后:
-<AntApp>
-  <ErrorBoundary>
-    <BrowserRouter>
-      ...
-    </BrowserRouter>
-  </ErrorBoundary>
-</AntApp>
-```
-
-- [ ] **Step 3: 验证**
-
-```bash
-cd frontend && npx tsc --noEmit
-```
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add frontend/src/components/common/ErrorBoundary.tsx frontend/src/App.tsx
-git commit -m "feat: add ErrorBoundary with antd Result, wrap App root"
-```
-
----
-
-### Task 2: EmptyState 组件
-
-**Files:**
-- Create: `frontend/src/components/common/EmptyState.tsx`
-
-- [ ] **Step 1: 创建 EmptyState**
-
-```typescript
-import { Empty } from 'antd';
-import type { ReactNode } from 'react';
-
-interface Props {
-  description?: string;
-  image?: ReactNode;  // 与 antd Empty.image 命名一致，传入的是插图
-  action?: ReactNode;
-}
-
-export default function EmptyState({ description = '暂无数据', image, action }: Props) {
-  return (
-    <Empty
-      image={image || Empty.PRESENTED_IMAGE_SIMPLE}
-      description={description}
-      style={{ padding: '60px 0' }}
-    >
-      {action}
-    </Empty>
-  );
-}
-```
-
-- [ ] **Step 2: 验证**
+- [ ] **Step 2: TypeScript 检查**
 
 ```bash
 cd frontend && npx tsc --noEmit
@@ -155,179 +328,44 @@ cd frontend && npx tsc --noEmit
 - [ ] **Step 3: Commit**
 
 ```bash
-git add frontend/src/components/common/EmptyState.tsx
-git commit -m "feat: add EmptyState common component wrapping antd Empty"
+git add frontend/src/components/common/ErrorBoundary.tsx
+git commit -m "fix: add componentDidCatch logging to ErrorBoundary"
 ```
 
 ---
 
-### Task 3: Skeleton 组件
+### Task 4: Skeleton/EmptyState 视觉验证 + 补充缺失加载态
 
 **Files:**
-- Create: `frontend/src/components/common/Skeleton.tsx`
-
-- [ ] **Step 1: 创建 Skeleton 预设模板**
-
-```typescript
-import { Skeleton as AntSkeleton, Card, Row, Col } from 'antd';
-
-/** 模拟表格: 表头 + 5 行 */
-export function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  return (
-    <Card>
-      <AntSkeleton active title={{ width: '30%' }} paragraph={{ rows: 1 }} />
-      {Array.from({ length: rows }, (_, i) => (
-        <AntSkeleton
-          key={i}
-          active
-          avatar={{ shape: 'square', size: 'small' }}
-          paragraph={{ rows: 1 }}
-          title={false}
-        />
-      ))}
-    </Card>
-  );
-}
-
-/** 模拟统计卡片: 1 行 × 4 列 */
-export function CardSkeleton({ count = 4 }: { count?: number }) {
-  return (
-    <Row gutter={16}>
-      {Array.from({ length: count }, (_, i) => (
-        <Col key={i} span={6}>
-          <Card>
-            <AntSkeleton active paragraph={{ rows: 2 }} title={{ width: '60%' }} />
-          </Card>
-        </Col>
-      ))}
-    </Row>
-  );
-}
-
-/** 模拟详情页: 多个信息卡片 */
-export function DetailSkeleton({ cards = 4 }: { cards?: number }) {
-  return (
-    <div>
-      <AntSkeleton active paragraph={{ rows: 0 }} title={{ width: '40%' }} />
-      {Array.from({ length: cards }, (_, i) => (
-        <Card key={i} style={{ marginTop: 16 }}>
-          <AntSkeleton active paragraph={{ rows: 3 }} title={{ width: '50%' }} />
-        </Card>
-      ))}
-    </div>
-  );
-}
-```
-
-- [ ] **Step 2: 验证**
-
-```bash
-cd frontend && npx tsc --noEmit
-```
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add frontend/src/components/common/Skeleton.tsx
-git commit -m "feat: add Skeleton presets: TableSkeleton, CardSkeleton, DetailSkeleton"
-```
-
----
-
-### Task 4: 接入各页面
-
-**Files:**
-- Modify: `frontend/src/pages/DashboardPage.tsx`
-- Modify: `frontend/src/pages/CaseListPage.tsx`
-- Modify: `frontend/src/pages/CaseDetailPage.tsx`
 - Modify: `frontend/src/pages/BatchPredictPage.tsx`
-- Modify: `frontend/src/components/admin/UserManagement.tsx`
+- Review（无需修改，仅验证）: `CaseListPage.tsx`, `CaseDetailPage.tsx`, `DashboardPage.tsx`, `AdminPage.tsx`, `UserManagement.tsx`, `DataUpload.tsx`
 
-- [ ] **Step 1: DashboardPage — 本次跳过**
+- [ ] **Step 1: BatchPredictPage 历史任务列表添加 TableSkeleton**
 
-DashboardPage 无需修改。StatsCards 组件内部自行获取数据，初始渲染先显示 4 张空白统计卡片（value 为 0），API 返回后更新数据——无骨架屏过渡。这是第一个登录后看到的页面，是已知 UX 改进项，建议后续给 StatsCards 加显式 `loading` state 并在此处用 `<CardSkeleton />` 替换。本次不阻塞。
+当前历史列表在 `loadTaskList` 执行期间无骨架屏。添加 `listLoading` 状态和 `TableSkeleton`。
 
-- [ ] **Step 2: CaseListPage — TableSkeleton + EmptyState**
+```tsx
+// BatchPredictPage.tsx — 新增 state:
+const [listLoading, setListLoading] = useState(false);
 
-在 `CaseListPage.tsx` 中:
+// 修改 loadTaskList:
+const loadTaskList = useCallback(async () => {
+  setListLoading(true);
+  try {
+    const data = await fetchBatchList(1, 20);
+    setTaskList(data.items);
+  } catch {
+    // ignore
+  } finally {
+    setListLoading(false);
+  }
+}, []);
 
-导入区域添加:
-```typescript
-import { TableSkeleton } from '../components/common/Skeleton';
-import EmptyState from '../components/common/EmptyState';
-```
-
-**只替换表格区域，筛选栏始终可见**（不用早期 return，避免筛选项消失）:
-
-找到 return 中的 `<CaseTable ... />` 行，替换为:
-```typescript
-{loading ? (
-  <TableSkeleton />
-) : data.length === 0 ? (
-  <EmptyState description="暂无案件" />
-) : (
-  <CaseTable
-    data={data}
-    total={total}
-    loading={false}
-    page={page}
-    pageSize={pageSize}
-    onPageChange={(p, ps) => { setPage(p); setPageSize(ps); }}
-    // ... 其余 props 保持不变
-  />
-)}
-```
-
-筛选栏（风险等级 Select + 判定状态 Select + 日期 RangePicker + 关键词 Input）在 return 中始终渲染，不受 loading/empty 影响。
-
-- [ ] **Step 3: CaseDetailPage — DetailSkeleton 替换 Spin**
-
-在 `CaseDetailPage.tsx` 中:
-
-导入:
-```typescript
-import { DetailSkeleton } from '../components/common/Skeleton';
-import EmptyState from '../components/common/EmptyState';
-```
-
-替换 lines 112-122:
-```typescript
-// 修改前:
-if (loading) {
-  return (
-    <div style={{ textAlign: 'center', padding: 100 }}>
-      <Spin size="large" />
-    </div>
-  );
-}
-if (!detail) {
-  return <div>案件不存在</div>;
-}
-
-// 修改后:
-if (loading) {
-  return <DetailSkeleton cards={4} />;
-}
-if (!detail) {
-  return <EmptyState description="案件不存在" />;
-}
-```
-
-并移除 `Spin` 从 antd import 中（如不再使用）。
-
-- [ ] **Step 4: BatchPredictPage — EmptyState 空任务列表**
-
-在 `BatchPredictPage.tsx` 中:
-
-导入:
-```typescript
-import EmptyState from '../components/common/EmptyState';
-```
-
-将历史任务 Table 替换为:
-```typescript
+// JSX — 在历史任务 Card 内添加 loading 分支:
 <Card title="历史任务">
-  {taskList.length === 0 ? (
+  {listLoading ? (
+    <TableSkeleton rows={5} />
+  ) : taskList.length === 0 ? (
     <EmptyState description="暂无批量预测任务" />
   ) : (
     <Table
@@ -341,71 +379,96 @@ import EmptyState from '../components/common/EmptyState';
 </Card>
 ```
 
-- [ ] **Step 5: UserManagement — EmptyState 空用户列表**
-
-在 `UserManagement.tsx` 中:
-
-导入:
-```typescript
-import EmptyState from '../common/EmptyState';
+顶部导入添加：
+```tsx
+import { TableSkeleton } from '../components/common/Skeleton';
 ```
 
-在 Table 渲染处加条件:
-```typescript
-// 修改前:
-<Table rowKey="user_id" ... />
+- [ ] **Step 2: 逐页视觉验证清单**
 
-// 修改后:
-{!loading && users.length === 0 ? (
-  <EmptyState description="暂无用户" />
-) : (
-  <Table rowKey="user_id" ... />
-)}
-```
+启动前端开发服务器后，逐页检查：
 
-- [ ] **Step 6: 验证**
+| 页面 | 检查项 | 预期 |
+|------|--------|------|
+| DashboardPage | StatsCards 首次加载 | CardSkeleton（4 列骨架卡片），加载完成后显示数据 |
+| DashboardPage | 趋势图首次加载 | Spin 居中显示 |
+| DashboardPage | HighRiskTable 空数据 | 空表格（无特殊处理，可接受） |
+| PredictionPage | 表单始终可见 | 无骨架（设计如此） |
+| BatchPredictPage | 历史列表首次加载 | TableSkeleton（5 行），加载完成后显示数据或 EmptyState |
+| BatchPredictPage | 空任务列表 | EmptyState "暂无批量预测任务" |
+| CaseListPage | 列表首次加载 | TableSkeleton |
+| CaseListPage | 筛选后无结果 | EmptyState "暂无案件" |
+| CaseDetailPage | 详情加载 | DetailSkeleton（4 卡片） |
+| CaseDetailPage | 案件不存在 | EmptyState "案件不存在" |
+| AdminPage/用户管理 | 列表首次加载 | Table 内置 loading={true} |
+| AdminPage/用户管理 | 空列表 | EmptyState "暂无用户" |
+| AdminPage/数据管理 | 空任务 | Table locale "暂无导入任务" |
+
+- [ ] **Step 3: TypeScript 检查**
 
 ```bash
 cd frontend && npx tsc --noEmit
 ```
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add frontend/src/pages/CaseListPage.tsx frontend/src/pages/CaseDetailPage.tsx frontend/src/pages/BatchPredictPage.tsx frontend/src/components/admin/UserManagement.tsx
-git commit -m "feat: integrate Skeleton and EmptyState into all pages"
+git add frontend/src/pages/BatchPredictPage.tsx
+git commit -m "feat: add TableSkeleton loading state to BatchPredictPage history list"
 ```
 
 ---
 
-### Task 5: 验证
+### Task 5: 批量预测端到端功能测试
 
-- [ ] **Step 1: TypeScript + Build**
+**Files:** 无代码修改，纯验证
 
-```bash
-cd frontend && npx tsc --noEmit && npx vite build
+- [ ] **Step 1: 准备测试数据**
+
+创建测试 CSV 文件（5 行，包含全部 35 特征列，用模型期望的列名和顺序）:
+
+```csv
+ICD10_CHAPTER,BH_PREFIX,BH_CATEGORY,MBR_TYPE,BEN_TYPE,KIND_CODE,POCY_PLAN_DESC,TOTAL_RECEIPT_AMT_MISSING,DAYS_INCUR_TO_PAY_MISSING,DAYS_RCV_TO_CLOSE_MISSING,DAYS_RCV_TO_PAY_MISSING,KIND_CODE_MISSING,SUB_AMT,TOTAL_RECEIPT_AMT,ORG_PRES_AMT_VALUE,COPAY_PCT,NO_OF_YR,POLICY_CNT,INVOICE_CNT,DAYS_INCUR_TO_PAY,DAYS_RCV_TO_CLOSE,DAYS_HOSPITALIZATION,DAYS_RCV_TO_PAY,IS_INPATIENT,INCUR_MONTH,INCUR_DAYOFWEEK,INCUR_QUARTER,INCUR_IS_WEEKEND,PROV_LEVEL_ORDINAL,RECEIPT_TO_SUB_RATIO,IS_NEW_INSURED,IS_LONGTERM_INSURED,MBR_CLAIM_COUNT,MBR_AVG_SUB_AMT,MBR_UNIQUE_HOSPITALS
+XIX,5500,17,GR,P20,3,PPPP2402,0,0,0,0,0,2500.00,3000.00,1500.00,20.0,5,2,3,10,5,2,7,0,3,3,1,0,3,0.83,0,1,1,2500.00,1
+XIX,5500,17,GR,P20,3,PPPP2402,0,0,0,0,0,5000.00,6000.00,3000.00,10.0,3,1,1,15,3,0,5,1,6,2,2,0,2,0.83,1,0,2,5000.00,1
+XIII,3400,12,GR,B20,2,PPPP2301,0,0,0,0,0,1500.00,1800.00,900.00,30.0,8,3,5,20,7,3,10,0,11,5,4,1,4,0.83,0,0,3,1500.00,2
+XIX,5500,17,GR,P20,3,PPPP2402,0,0,0,0,0,1200.00,1500.00,800.00,25.0,2,1,2,8,2,1,4,0,2,1,1,0,1,0.80,1,1,0,0.00,0
+XIII,3400,12,GR,B20,2,PPPP2301,0,0,0,0,0,8000.00,9000.00,5000.00,15.0,10,5,8,25,10,5,14,1,8,4,3,1,5,0.89,0,0,5,8000.00,3
 ```
 
-- [ ] **Step 2: 视觉验证（手动，需浏览器）**
+> 注意：CSV 列顺序与 Task 1 修复后的模型期望顺序一致（cat→missing→cont）。
+
+- [ ] **Step 2: 启动服务**
 
 ```bash
-cd frontend && npm run dev
-# 浏览器访问 localhost:5173
+docker compose up -d postgres redis
+uv run uvicorn backend.app.main:app --reload --port 8000 &
+uv run celery -A backend.app.tasks.celery_app worker --loglevel=info --pool=solo --without-mingle --without-gossip --without-heartbeat &
+cd frontend && npm run dev &
 ```
 
-逐项验证并勾选:
-- [ ] 案件列表: 首次加载是否闪现 TableSkeleton → 数据展示
-- [ ] 案件列表: 空数据（username 搜不存在的值）→ EmptyState "暂无案件"
-- [ ] 案件详情: 点击某条记录加载 → DetailSkeleton → 详情展示
-- [ ] 批量预测: 历史任务列表为空 → EmptyState "暂无批量预测任务"
-- [ ] 用户管理: 用户列表为空 → EmptyState "暂无用户"
-- [ ] ErrorBoundary: 在任意页面控制台执行 `throw new Error('test')` → 显示 Result 错误页 + "刷新页面" 按钮 → 点击刷新恢复正常
+- [ ] **Step 3: 正常流程测试**
 
-> 注: DashboardPage 骨架屏暂不验证（StatsCards 内部自行加载，已知改进项）
+1. 登录系统
+2. 进入"批量预测"页面
+3. 上传测试 CSV 文件
+4. 验证：
+   - ✅ 上传后出现任务进度卡片
+   - ✅ 状态从 pending → processing → completed
+   - ✅ 进度数字递增
+   - ✅ 完成后显示"下载结果"按钮
+   - ✅ 下载结果 CSV 包含原始列 + `fraud_prob` + `risk_level` + `shap_top_features`
+5. 刷新页面 → 历史任务列表显示该任务
 
-- [ ] **Step 3: Commit（如有修复）**
+- [ ] **Step 4: 边界情况测试**
 
-```bash
-git status
-# 如有修复，commit
-```
+| 测试场景 | 预期行为 |
+|----------|----------|
+| 上传非 CSV/Excel 文件（.txt） | 前端拦截 "仅支持 CSV 和 Excel 文件" |
+| 上传缺少必需列的文件 | 行处理失败，risk_level 为 "error" |
+| 上传空文件 | 后端返回 400 "文件为空" |
+| Excel 格式 (.xlsx) | 正常处理，与 CSV 结果一致 |
+
+- [ ] **Step 5: 记录结果**
+
+测试完成后将结果写入 `docs/superpowers/plans/2026-06-03-phase4-polish-results.md`。
