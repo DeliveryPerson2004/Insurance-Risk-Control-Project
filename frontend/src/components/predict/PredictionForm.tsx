@@ -98,19 +98,19 @@ export default function PredictionForm({ onResult, loading }: Props) {
         </Form.Item>
       </div>
 
-      {/* 字段分组 — 2 列网格，自然高度对齐 */}
+      {/* 字段分组 — 2 列瀑布流，无行边界 */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 16,
-        alignItems: 'start',
+        columnCount: 2,
+        columnGap: 16,
       }}>
         {groups.map((group) => (
           <div key={group} style={{
+            breakInside: 'avoid',
             background: '#FFFFFF',
             border: '1px solid #E7E5E2',
             borderRadius: 6,
             padding: '16px 24px',
+            marginBottom: 16,
           }}>
             <h4 style={{ marginBottom: 12 }}>
               {group}
