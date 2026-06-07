@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  Upload, Table, message, Typography,
+  Upload, Table, App, Typography,
 } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
@@ -29,6 +29,7 @@ interface TaskRecord extends DataTaskStatus {
 }
 
 export default function DataUpload() {
+  const { message } = App.useApp();
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
   const [uploading, setUploading] = useState(false);
   // Map 管理多个并发轮询（每个进行中的任务一个 interval），避免单 ref 泄漏

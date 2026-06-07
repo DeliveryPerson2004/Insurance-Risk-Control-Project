@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Table, Tag, message } from 'antd';
+import { Table, Tag, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import BatchUpload from '../components/batch/BatchUpload';
 import BatchProgress from '../components/batch/BatchProgress';
@@ -14,6 +14,7 @@ import EmptyState from '../components/common/EmptyState';
 import { TableSkeleton } from '../components/common/Skeleton';
 
 export default function BatchPredictPage() {
+  const { message } = App.useApp();
   const [currentTask, setCurrentTask] = useState<BatchTaskStatus | null>(null);
   const [taskList, setTaskList] = useState<BatchTaskItem[]>([]);
   const [loading, setLoading] = useState(false);

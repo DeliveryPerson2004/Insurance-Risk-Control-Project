@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Table, Select, Switch, Input, message, Tag, Space,
+  Table, Select, Switch, Input, App, Tag, Space,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -21,6 +21,7 @@ const ROLE_COLOR: Record<string, string> = {
 };
 
 export default function UserManagement() {
+  const { message } = App.useApp();
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

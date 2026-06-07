@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Button, Form, Input, message, Tabs } from 'antd';
+import { Button, Form, Input, App, Tabs } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
 import type { LoginRequest, RegisterRequest } from '../types';
 
 export default function LoginPage() {
+  const { message } = App.useApp();
   const { login, register } = useAuth();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { message, Card } from 'antd';
+import { App, Card } from 'antd';
 import PredictionForm from '../components/predict/PredictionForm';
 import RiskGauge from '../components/predict/RiskGauge';
 import ShapExplanation from '../components/predict/ShapExplanation';
@@ -7,6 +7,7 @@ import { postSinglePredict } from '../api/predict';
 import type { PredictSingleResponse } from '../types';
 
 export default function PredictionPage() {
+  const { message } = App.useApp();
   const [result, setResult] = useState<PredictSingleResponse | null>(null);
   const [loading, setLoading] = useState(false);
 

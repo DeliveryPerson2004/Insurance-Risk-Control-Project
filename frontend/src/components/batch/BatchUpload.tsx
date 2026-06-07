@@ -1,4 +1,4 @@
-import { Upload, message } from 'antd';
+import { Upload, App } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function BatchUpload({ onUpload, disabled }: Props) {
+  const { message } = App.useApp();
   const props: UploadProps = {
     name: 'file',
     multiple: false,

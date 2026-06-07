@@ -6,7 +6,7 @@ import {
   Row,
   Col,
   Space,
-  message,
+  App,
 } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import CaseTable from '../components/cases/CaseTable';
@@ -18,6 +18,7 @@ import EmptyState from '../components/common/EmptyState';
 const { RangePicker } = DatePicker;
 
 export default function CaseListPage() {
+  const { message } = App.useApp();
   const [data, setData] = useState<CaseListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Button, Space, message } from 'antd';
+import { Card, Button, Space, App } from 'antd';
 import { DetailSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import {
@@ -22,6 +22,7 @@ import { analyzeCase } from '../api/agent';
 import type { CaseDetailResponse } from '../types';
 
 export default function CaseDetailPage() {
+  const { message } = App.useApp();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [detail, setDetail] = useState<CaseDetailResponse | null>(null);

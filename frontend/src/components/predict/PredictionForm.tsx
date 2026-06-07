@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Form, Select, InputNumber, Input, Button, message, Spin } from 'antd';
+import { Form, Select, InputNumber, Input, Button, App, Spin } from 'antd';
 import type { FieldOption } from '../../types';
 import { getFieldOptions } from '../../api/predict';
 
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function PredictionForm({ onResult, loading }: Props) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [fields, setFields] = useState<FieldOption[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
@@ -71,7 +72,7 @@ export default function PredictionForm({ onResult, loading }: Props) {
   };
 
   if (fetching) {
-    return <Spin tip="加载字段配置..." style={{ display: 'block', textAlign: 'center', padding: 48 }} />;
+    return <Spin style={{ display: 'block', textAlign: 'center', padding: 48 }} />;
   }
 
   return (
