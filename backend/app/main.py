@@ -13,6 +13,27 @@ from backend.app.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """启动/关闭生命周期管理."""
+    # 确保默认模型记录存在（首次部署时自动创建）
+    try:
+        from backend.app.database import async_session
+        from backend.app.models.model_info import ModelInfo
+        from sqlalchemy import select
+        async with async_session() as db:
+            result = await db.execute(select(ModelInfo).limit(1))
+            if result.scalar_one_or_none() is None:
+                db.add(ModelInfo(
+                    model_name="XGBoost v4",
+                    model_algorithm="XGBoost + IsotonicRegression",
+                    model_version="4.0",
+                    model_auc=0.9934,
+                    threshold=0.36,
+                    feature_count=35,
+                    is_active=True,
+                ))
+                await db.commit()
+    except Exception:
+        pass  # 数据库未就绪时静默跳过
+
     yield
     # Cleanup agent HTTP client
     try:
